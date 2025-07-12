@@ -3,16 +3,17 @@ package cz.lukynka.minestom.gamejam
 import cz.lukynka.minestom.gamejam.commands.LobbyCommand
 import cz.lukynka.minestom.gamejam.commands.QueueCommand
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueue
-import cz.lukynka.minestom.gamejam.game.queue.AbstractQueue
 import cz.lukynka.minestom.gamejam.game.queue.PublicQueue
+import cz.lukynka.minestom.gamejam.game.queue.Queue
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.Player
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
 import net.minestom.server.instance.block.Block
 import net.minestom.server.timer.TaskSchedule
-import java.util.*
+import java.util.UUID
 
 private val lukynkaCZEUUID = UUID.fromString("0c9151e4-7083-418d-a29c-bbc58f7c741b")
 private val p1k0chuUUID = UUID.fromString("86288596-0bf4-421f-b96a-902a8762b83e")
@@ -24,6 +25,7 @@ fun Player.isAdmin(): Boolean {
 
 val publicQueue = PublicQueue()
 val privateQueues = Object2ObjectArrayMap<Player, PrivateQueue>()
+val player2QueueMap = Object2ObjectOpenHashMap<Player, Queue>()
 
 fun main() {
     val server = MinecraftServer.init()

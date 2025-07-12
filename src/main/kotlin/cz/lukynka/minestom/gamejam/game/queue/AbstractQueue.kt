@@ -2,6 +2,7 @@ package cz.lukynka.minestom.gamejam.game.queue
 
 import cz.lukynka.minestom.gamejam.apis.Bossbar
 import cz.lukynka.minestom.gamejam.game.GameInstanceImpl
+import cz.lukynka.minestom.gamejam.player2QueueMap
 import cz.lukynka.minestom.gamejam.truncate
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import net.kyori.adventure.bossbar.BossBar
@@ -17,6 +18,9 @@ abstract class AbstractQueue : Queue {
     override fun enqueue(player: Player) {
         if (players.contains(player)) return
 
+        player2QueueMap[player]?.dequeue(player)
+        player2QueueMap[player] = this
+
         _players.addLast(player)
         bar.addViewer(player)
         bar.title.value = bossBarTitle()
@@ -25,6 +29,7 @@ abstract class AbstractQueue : Queue {
     override fun dequeue(player: Player) {
         _players.remove(player)
         bar.removeViewer(player)
+        player2QueueMap[player] = null
     }
 
     override fun makeTeam(): Result<List<Player>> {
