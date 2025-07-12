@@ -1,5 +1,6 @@
 package cz.lukynka.minestom.gamejam
 
+import cz.lukynka.minestom.gamejam.commands.DebugCommand
 import cz.lukynka.minestom.gamejam.commands.GameModeCommand
 import cz.lukynka.minestom.gamejam.commands.LobbyCommand
 import cz.lukynka.minestom.gamejam.commands.QueueCommand
@@ -10,7 +11,11 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
+import net.minestom.server.entity.LivingEntity
 import net.minestom.server.entity.Player
+import net.minestom.server.entity.damage.Damage
+import net.minestom.server.entity.damage.DamageType
+import net.minestom.server.event.entity.EntityAttackEvent
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
 import net.minestom.server.instance.block.Block
 import net.minestom.server.timer.TaskSchedule
@@ -34,6 +39,7 @@ fun main() {
     val commandManager = MinecraftServer.getCommandManager()
     commandManager.register(QueueCommand)
     commandManager.register(LobbyCommand)
+    commandManager.register(DebugCommand)
     commandManager.register(GameModeCommand)
 
     val instanceManager = MinecraftServer.getInstanceManager()
@@ -47,6 +53,14 @@ fun main() {
     globalEventHandler.addListener(AsyncPlayerConfigurationEvent::class.java) { event ->
         event.spawningInstance = hub
         event.player.respawnPoint = Pos(0.5, 42.0, 0.5)
+    }
+
+    globalEventHandler.addListener(EntityAttackEvent::class.java) { event ->
+        val target = event.target
+
+        if (target is LivingEntity) {
+            target.damage(DamageType.MOB_ATTACK, 1f)
+        }
     }
 
     val scheduler = MinecraftServer.getSchedulerManager()
