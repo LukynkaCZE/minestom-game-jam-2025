@@ -1,5 +1,6 @@
 package cz.lukynka.minestom.gamejam
 
+import cz.lukynka.minestom.gamejam.commands.GameModeCommand
 import cz.lukynka.minestom.gamejam.commands.LobbyCommand
 import cz.lukynka.minestom.gamejam.commands.QueueCommand
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueue
@@ -33,6 +34,7 @@ fun main() {
     val commandManager = MinecraftServer.getCommandManager()
     commandManager.register(QueueCommand)
     commandManager.register(LobbyCommand)
+    commandManager.register(GameModeCommand)
 
     val instanceManager = MinecraftServer.getInstanceManager()
     val hub = instanceManager.createInstanceContainer()
