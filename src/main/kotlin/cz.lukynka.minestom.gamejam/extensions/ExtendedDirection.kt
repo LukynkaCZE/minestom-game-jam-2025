@@ -1,6 +1,6 @@
 package cz.lukynka.minestom.gamejam.extensions
 
-import cz.lukynka.minestom.utils.vectors.Vector3f
+import cz.lukynka.minestom.gamejam.vectors.Vector3f
 import net.minestom.server.utils.Direction
 
 fun Direction.toNormalizedVector3f(): Vector3f {

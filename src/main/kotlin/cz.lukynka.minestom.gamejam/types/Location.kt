@@ -1,14 +1,14 @@
 package cz.lukynka.minestom.gamejam.types
 
 import cz.lukynka.minestom.gamejam.Bound
+import cz.lukynka.minestom.gamejam.extensions.getBlock
+import cz.lukynka.minestom.gamejam.extensions.locationAt
+import cz.lukynka.minestom.gamejam.extensions.toNormalizedVector3f
 import cz.lukynka.minestom.gamejam.truncate
-import cz.lukynka.minestom.utils.extensions.getBlock
-import cz.lukynka.minestom.utils.extensions.locationAt
-import cz.lukynka.minestom.utils.extensions.toNormalizedVector3f
-import cz.lukynka.minestom.utils.vectors.Vector2f
-import cz.lukynka.minestom.utils.vectors.Vector3
-import cz.lukynka.minestom.utils.vectors.Vector3d
-import cz.lukynka.minestom.utils.vectors.Vector3f
+import cz.lukynka.minestom.gamejam.vectors.Vector2f
+import cz.lukynka.minestom.gamejam.vectors.Vector3
+import cz.lukynka.minestom.gamejam.vectors.Vector3d
+import cz.lukynka.minestom.gamejam.vectors.Vector3f
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.instance.Chunk
 import net.minestom.server.instance.Instance
