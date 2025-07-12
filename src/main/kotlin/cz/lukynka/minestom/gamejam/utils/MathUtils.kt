@@ -1,6 +1,6 @@
-package cz.lukynka.minestom.gamejam
+package cz.lukynka.minestom.gamejam.utils
 
-import java.util.*
+import java.util.Locale
 import kotlin.math.pow
 import kotlin.math.round
 
@@ -10,7 +10,7 @@ fun Double.round(decimals: Int): Double {
     }
 }
 
-fun Double.truncate(decimals: Int): String = String.format(Locale.ROOT, "%.${decimals}f", this)
+fun Double.truncate(decimals: Int): String = String.Companion.format(Locale.ROOT, "%.${decimals}f", this)
 
 fun Float.round(decimals: Int): Float {
     return 10f.pow(decimals).let {
@@ -18,4 +18,4 @@ fun Float.round(decimals: Int): Float {
     }
 }
 
-fun Float.truncate(decimals: Int): String = String.format(Locale.ROOT, "%.${decimals}f", this)
+fun Float.truncate(decimals: Int): String = String.Companion.format(Locale.ROOT, "%.${decimals}f", this)

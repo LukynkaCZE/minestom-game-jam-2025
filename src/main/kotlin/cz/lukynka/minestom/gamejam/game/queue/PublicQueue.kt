@@ -1,7 +1,7 @@
 package cz.lukynka.minestom.gamejam.game.queue
 
 import cz.lukynka.minestom.gamejam.game.GameInstanceImpl
-import cz.lukynka.minestom.gamejam.truncate
+import cz.lukynka.minestom.gamejam.utils.truncate
 import net.minestom.server.entity.Player
 
 class PublicQueue : AbstractQueue() {

@@ -3,7 +3,7 @@ package cz.lukynka.minestom.gamejam.game.queue
 import cz.lukynka.minestom.gamejam.apis.Bossbar
 import cz.lukynka.minestom.gamejam.game.GameInstanceImpl
 import cz.lukynka.minestom.gamejam.player2QueueMap
-import cz.lukynka.minestom.gamejam.truncate
+import cz.lukynka.minestom.gamejam.utils.truncate
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import net.kyori.adventure.bossbar.BossBar
 import net.minestom.server.entity.Player
