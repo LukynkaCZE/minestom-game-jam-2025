@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.1.21"
+    application
 }
 
 repositories {
@@ -7,6 +8,8 @@ repositories {
     maven("https://mvn.devos.one/releases")
     maven("https://mvn.devos.one/snapshots")
 }
+
+application.mainClass = "cz.lukynka.minestom.gamejam.MainKt"
 
 dependencies {
     testImplementation(kotlin("test"))
