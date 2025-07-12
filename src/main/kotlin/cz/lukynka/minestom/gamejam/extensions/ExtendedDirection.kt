@@ -11,6 +11,5 @@ fun Direction.toNormalizedVector3f(): Vector3f {
         Direction.WEST -> Vector3f(-1f, 0f, 0f)
         Direction.UP -> Vector3f(0f, 1f, 0f)
         Direction.DOWN -> Vector3f(0f, -1f, 0f)
-        else -> Vector3f(0f, 0f, 0f)
     }
 }
