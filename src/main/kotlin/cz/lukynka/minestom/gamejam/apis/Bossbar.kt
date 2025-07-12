@@ -67,6 +67,7 @@ class Bossbar(title: String = "", progress: Float = 1f, color: BossBar.Color, no
     }
 
     override fun removeViewer(player: Player) {
+        super.removeViewer(player)
         player.sendPacket(BossBarPacket(uuid, BossBarPacket.RemoveAction()))
     }
 
