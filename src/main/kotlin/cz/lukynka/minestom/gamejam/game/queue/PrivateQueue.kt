@@ -10,4 +10,8 @@ interface PrivateQueue : Queue {
      * Owner of the group
      */
     val owner: Player
+
+    val invitedPlayers: List<Player>
+
+    fun invite(player: Player)
 }

@@ -25,9 +25,4 @@ interface Queue : PlayerListAudience {
      * Returns a list of players for a single game, if there's at least one player in queue
      */
     fun forceMakeTeam(): Result<List<Player>>
-
-    /**
-     * Tick. woah!!!!! what a shocker!!!!
-     */
-    fun tick()
 }

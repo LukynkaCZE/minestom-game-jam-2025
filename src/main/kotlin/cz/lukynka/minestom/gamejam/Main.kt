@@ -1,7 +1,11 @@
 package cz.lukynka.minestom.gamejam
 
+import cz.lukynka.minestom.gamejam.commands.LobbyCommand
 import cz.lukynka.minestom.gamejam.commands.QueueCommand
-import cz.lukynka.minestom.gamejam.game.queue.QueueImpl
+import cz.lukynka.minestom.gamejam.game.queue.PrivateQueue
+import cz.lukynka.minestom.gamejam.game.queue.AbstractQueue
+import cz.lukynka.minestom.gamejam.game.queue.PublicQueue
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.Player
@@ -18,11 +22,15 @@ fun Player.isAdmin(): Boolean {
             uuid == p1k0chuUUID
 }
 
+val publicQueue = PublicQueue()
+val privateQueues = Object2ObjectArrayMap<Player, PrivateQueue>()
+
 fun main() {
     val server = MinecraftServer.init()
 
     val commandManager = MinecraftServer.getCommandManager()
     commandManager.register(QueueCommand)
+    commandManager.register(LobbyCommand)
 
     val instanceManager = MinecraftServer.getInstanceManager()
     val hub = instanceManager.createInstanceContainer()
@@ -39,7 +47,7 @@ fun main() {
 
     val scheduler = MinecraftServer.getSchedulerManager()
     scheduler.submitTask {
-        QueueImpl.tick()
+        publicQueue.tick()
         TaskSchedule.tick(1)
     }
 
