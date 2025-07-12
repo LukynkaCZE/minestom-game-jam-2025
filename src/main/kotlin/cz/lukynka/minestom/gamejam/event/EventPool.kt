@@ -16,9 +16,7 @@ class EventPool : Disposable {
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : Event> on(noinline function: EventListenerFunction<T>): EventNode<T> {
         val eventType = T::class.java
-        val node = eventNode.addListener(eventType) { event ->
-            function.invoke(event)
-        }
+        val node = eventNode.addListener(eventType, function)
         eventMap[T::class] = node
         return node as EventNode<T>
     }
