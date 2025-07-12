@@ -13,7 +13,7 @@ dependencies {
 
     // stom
     implementation("net.kyori:adventure-text-minimessage:4.23.0")
-    implementation("net.minestom:minestom-snapshots:4fe2993057")
+    implementation("net.minestom:minestom:2025.07.11-1.21.7")
 
     // logging
     implementation("org.slf4j:slf4j-simple:2.0.9")
