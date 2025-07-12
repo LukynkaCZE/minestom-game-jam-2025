@@ -2,9 +2,6 @@ plugins {
     kotlin("jvm") version "2.1.21"
 }
 
-group = "cz.lukynka.minestom.gamejam"
-version = "1.0-SNAPSHOT"
-
 repositories {
     mavenCentral()
     maven("https://mvn.devos.one/releases")
@@ -19,7 +16,7 @@ dependencies {
     implementation("net.minestom:minestom-snapshots:4fe2993057")
 
     // logging
-    implementation("org.slf4j:slf4j-nop:2.0.9")
+    implementation("org.slf4j:slf4j-simple:2.0.9")
     api("cz.lukynka:pretty-log:1.5")
 
     // other
