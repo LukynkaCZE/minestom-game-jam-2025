@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 package cz.lukynka.minestom.gamejam.commands
 
 import cz.lukynka.minestom.gamejam.entity.Zombie
@@ -10,11 +12,16 @@ import net.kyori.adventure.text.format.TextColor
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.command.builder.suggestion.SuggestionEntry
+import net.minestom.server.component.DataComponent
+import net.minestom.server.component.DataComponentMap
+import net.minestom.server.component.DataComponents
 import net.minestom.server.coordinate.Pos
+import net.minestom.server.coordinate.Vec
 import net.minestom.server.entity.ItemEntity
 import net.minestom.server.entity.Player
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
+import net.minestom.server.item.component.CustomModelData
 import kotlin.io.path.*
 
 object DebugCommand : Command("debug") {
@@ -45,6 +52,23 @@ object DebugCommand : Command("debug") {
                 itemStack = context.get(itemArg)
             }
         }, ArgumentType.Literal("spawn_display_entity"), itemArg)
+
+        addSyntax({ sender, context ->
+            if (sender !is Player) return@addSyntax
+
+            spawnItemDisplay(
+                sender.instance,
+                sender.position.withView(0f, 0f)
+            ) {
+                itemStack = ItemStack.of(
+                    Material.STICK,
+                    DataComponentMap.builder()
+                        .set(DataComponents.CUSTOM_MODEL_DATA, CustomModelData(listOf(9f), listOf(), listOf(), listOf()))
+                        .build()
+                )
+                scale = Vec(32.0)
+            }
+        }, ArgumentType.Literal("spawn_elevator_model"))
 
         addSyntax({ sender, context ->
             if (sender !is Player) return@addSyntax
