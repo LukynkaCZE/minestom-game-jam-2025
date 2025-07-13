@@ -20,6 +20,8 @@ import net.minestom.server.event.entity.EntityAttackEvent
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
 import net.minestom.server.instance.LightingChunk
 import net.minestom.server.instance.block.Block
+import net.minestom.server.network.ConnectionState
+import net.minestom.server.network.packet.client.play.ClientChangeGameModePacket
 import net.minestom.server.timer.TaskSchedule
 import java.util.*
 
@@ -72,6 +74,15 @@ fun main() {
 
         if (target is LivingEntity) {
             target.damage(DamageType.MOB_ATTACK, 1f)
+        }
+    }
+
+    val packetManager = MinecraftServer.getPacketListenerManager()
+    packetManager.setListener(ConnectionState.PLAY, ClientChangeGameModePacket::class.java) { packet, connection ->
+        val player = connection.player ?: return@setListener
+
+        if (player.permissionLevel >= 4) {
+            player.gameMode = packet.gameMode
         }
     }
 
