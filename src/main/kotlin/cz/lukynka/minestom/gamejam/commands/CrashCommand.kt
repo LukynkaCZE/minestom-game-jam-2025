@@ -5,7 +5,6 @@ import net.kyori.adventure.text.format.TextColor
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.entity.Player
-import net.minestom.server.network.packet.client.handshake.ClientHandshakePacket
 import net.minestom.server.network.packet.server.play.SetPassengersPacket
 
 object CrashCommand : Command("crash") {
@@ -17,26 +16,28 @@ object CrashCommand : Command("crash") {
         }
 
         addSyntax({ sender, context ->
-            val player = context.get(playerArg)
-                .findFirstPlayer(sender) ?: return@addSyntax
-
-            player.sendPacket(
-                SetPassengersPacket(
-                    player.entityId,
-                    listOf(player.entityId)
-                )
-            )
-
-            sender.sendMessage(
-                Component.text("Crashed ")
-                    .append(
-                        Component.text(
-                            player.username,
-                            TextColor.color(0xffbb00)
+            context.get(playerArg)
+                .find(sender)
+                .filterIsInstance<Player>()
+                .forEach { player ->
+                    player.sendPacket(
+                        SetPassengersPacket(
+                            player.entityId,
+                            listOf(player.entityId)
                         )
                     )
-                    .append(Component.text("!"))
-            )
+
+                    sender.sendMessage(
+                        Component.text("Crashed ")
+                            .append(
+                                Component.text(
+                                    player.username,
+                                    TextColor.color(0xffbb00)
+                                )
+                            )
+                            .append(Component.text("!"))
+                    )
+                }
         }, playerArg)
     }
 }
