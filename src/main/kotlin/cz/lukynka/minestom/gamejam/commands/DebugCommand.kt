@@ -1,6 +1,6 @@
 package cz.lukynka.minestom.gamejam.commands
 
-import cz.lukynka.minestom.gamejam.combat.enemy.Zombie
+import cz.lukynka.minestom.gamejam.entity.Zombie
 import cz.lukynka.minestom.gamejam.isAdmin
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType

@@ -1,4 +1,4 @@
-package cz.lukynka.minestom.gamejam.combat.enemy
+package cz.lukynka.minestom.gamejam.entity
 
 import cz.lukynka.minestom.gamejam.extensions.ticks
 import net.minestom.server.entity.EntityCreature
