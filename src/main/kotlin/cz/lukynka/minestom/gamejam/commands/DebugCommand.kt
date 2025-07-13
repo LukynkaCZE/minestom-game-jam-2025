@@ -1,7 +1,6 @@
 package cz.lukynka.minestom.gamejam.commands
 
 import cz.lukynka.minestom.gamejam.entity.Zombie
-import cz.lukynka.minestom.gamejam.isAdmin
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
@@ -15,7 +14,7 @@ import net.minestom.server.item.Material
 object DebugCommand : Command("debug") {
     init {
         setCondition { sender, _ ->
-            sender is Player && sender.isAdmin()
+            sender is Player && sender.permissionLevel >= 4
         }
 
         addSyntax({ sender, context ->

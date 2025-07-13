@@ -1,6 +1,5 @@
 package cz.lukynka.minestom.gamejam.commands
 
-import cz.lukynka.minestom.gamejam.isAdmin
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.entity.GameMode
@@ -9,7 +8,7 @@ import net.minestom.server.entity.Player
 object GameModeCommand : Command("gamemode") {
     init {
         setCondition { sender, _ ->
-            sender is Player && sender.isAdmin()
+            sender is Player && sender.permissionLevel >= 4
         }
 
         val arg = ArgumentType.Enum("gamemode", GameMode::class.java)

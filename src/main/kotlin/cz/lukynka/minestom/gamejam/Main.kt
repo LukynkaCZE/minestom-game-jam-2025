@@ -53,8 +53,14 @@ fun main() {
     val globalEventHandler = MinecraftServer.getGlobalEventHandler()
 
     globalEventHandler.addListener(AsyncPlayerConfigurationEvent::class.java) { event ->
+        val player = event.player
+
         event.spawningInstance = hub
-        event.player.respawnPoint = Pos(0.5, 42.0, 0.5)
+        player.respawnPoint = Pos(0.5, 42.0, 0.5)
+
+        if (player.isAdmin()) {
+            player.permissionLevel = 4
+        }
     }
 
     globalEventHandler.addListener(EntityAttackEvent::class.java) { event ->
