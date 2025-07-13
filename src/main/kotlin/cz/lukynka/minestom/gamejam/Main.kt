@@ -17,6 +17,7 @@ import net.minestom.server.entity.damage.Damage
 import net.minestom.server.entity.damage.DamageType
 import net.minestom.server.event.entity.EntityAttackEvent
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
+import net.minestom.server.instance.LightingChunk
 import net.minestom.server.instance.block.Block
 import net.minestom.server.timer.TaskSchedule
 import java.util.UUID
@@ -44,6 +45,7 @@ fun main() {
 
     val instanceManager = MinecraftServer.getInstanceManager()
     val hub = instanceManager.createInstanceContainer()
+    hub.setChunkSupplier(::LightingChunk)
     hub.setGenerator {
         it.modifier().fillHeight(0, 40, Block.STONE)
     }
