@@ -2,6 +2,7 @@ package cz.lukynka.minestom.gamejam.commands
 
 import cz.lukynka.minestom.gamejam.entity.Zombie
 import cz.lukynka.minestom.gamejam.isAdmin
+import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.entity.Entity
@@ -27,14 +28,28 @@ object DebugCommand : Command("debug") {
             zombie.setInstance(world, pos)
         }, ArgumentType.Literal("spawn_zombie"))
 
+        val itemArg = ArgumentType.ItemStack("item")
+
         addSyntax({ sender, context ->
             if (sender !is Player) return@addSyntax
 
-            val en = Entity(EntityType.ITEM_DISPLAY)
-            en.setNoGravity(true)
-            val meta = en.entityMeta as ItemDisplayMeta
-            meta.itemStack = ItemStack.of(Material.values().random())
-            en.setInstance(sender.instance, sender.position.withView(0f, 0f))
+            spawnItemDisplay(
+                sender.instance,
+                sender.position.withView(0f, 0f)
+            ) {
+                itemStack = context.get(itemArg)
+            }
+        }, ArgumentType.Literal("spawn_display_entity"), itemArg)
+
+        addSyntax({ sender, context ->
+            if (sender !is Player) return@addSyntax
+
+            spawnItemDisplay(
+                sender.instance,
+                sender.position.withView(0f, 0f)
+            ) {
+                itemStack = ItemStack.of(Material.values().random())
+            }
         }, ArgumentType.Literal("spawn_display_entity"))
     }
 }
