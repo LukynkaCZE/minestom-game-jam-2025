@@ -1,5 +1,6 @@
 package cz.lukynka.minestom.gamejam
 
+import cz.lukynka.minestom.gamejam.commands.CrashCommand
 import cz.lukynka.minestom.gamejam.commands.DebugCommand
 import cz.lukynka.minestom.gamejam.commands.GameModeCommand
 import cz.lukynka.minestom.gamejam.commands.LobbyCommand
@@ -48,6 +49,7 @@ fun main() {
     commandManager.register(LobbyCommand)
     commandManager.register(DebugCommand)
     commandManager.register(GameModeCommand)
+    commandManager.register(CrashCommand)
 
     val instanceManager = MinecraftServer.getInstanceManager()
     val hub = instanceManager.createInstanceContainer()
