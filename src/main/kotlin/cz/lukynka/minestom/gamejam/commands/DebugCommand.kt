@@ -2,6 +2,7 @@
 
 package cz.lukynka.minestom.gamejam.commands
 
+import cz.lukynka.minestom.gamejam.combat.ElementType
 import cz.lukynka.minestom.gamejam.entity.Zombie
 import cz.lukynka.minestom.gamejam.extensions.round
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
@@ -35,7 +36,7 @@ object DebugCommand : Command("debug") {
             val pos = sender.position
             val world = sender.instance!!
 
-            val zombie = Zombie()
+            val zombie = Zombie(ElementType.entries.random())
             zombie.setInstance(world, pos)
         }, ArgumentType.Literal("spawn_zombie"))
 

@@ -1,6 +1,7 @@
 package cz.lukynka.minestom.gamejam
 
 import cz.lukynka.minestom.gamejam.commands.CrashCommand
+import cz.lukynka.minestom.gamejam.combat.CombatManager
 import cz.lukynka.minestom.gamejam.commands.DebugCommand
 import cz.lukynka.minestom.gamejam.commands.GameModeCommand
 import cz.lukynka.minestom.gamejam.commands.GiveCommand
@@ -20,8 +21,11 @@ import net.minestom.server.entity.Player
 import net.minestom.server.entity.damage.DamageType
 import net.minestom.server.event.entity.EntityAttackEvent
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
+import net.minestom.server.extras.MojangAuth
 import net.minestom.server.instance.LightingChunk
 import net.minestom.server.instance.block.Block
+import net.minestom.server.item.ItemStack
+import net.minestom.server.item.Material
 import net.minestom.server.network.ConnectionState
 import net.minestom.server.network.packet.client.play.ClientChangeGameModePacket
 import net.minestom.server.timer.TaskSchedule
@@ -44,6 +48,7 @@ fun main() {
     GitIntegration.load()
 
     val server = MinecraftServer.init()
+    MojangAuth.init()
 
     val commandManager = MinecraftServer.getCommandManager()
     commandManager.register(QueueCommand)
@@ -60,6 +65,8 @@ fun main() {
         it.modifier().fillHeight(0, 40, Block.STONE)
     }
 
+    CombatManager.init()
+
     val globalEventHandler = MinecraftServer.getGlobalEventHandler()
 
     globalEventHandler.addListener(AsyncPlayerConfigurationEvent::class.java) { event ->
@@ -68,16 +75,10 @@ fun main() {
         event.spawningInstance = hub
         player.respawnPoint = Pos(0.5, 42.0, 0.5)
 
+        player.inventory.addItemStack(ItemStack.of(Material.IRON_SWORD))
+
         if (player.isAdmin()) {
             player.permissionLevel = 4
-        }
-    }
-
-    globalEventHandler.addListener(EntityAttackEvent::class.java) { event ->
-        val target = event.target
-
-        if (target is LivingEntity) {
-            target.damage(DamageType.MOB_ATTACK, 1f)
         }
     }
 
