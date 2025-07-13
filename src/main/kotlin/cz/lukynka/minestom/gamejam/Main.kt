@@ -4,6 +4,7 @@ import cz.lukynka.minestom.gamejam.commands.CrashCommand
 import cz.lukynka.minestom.gamejam.commands.DebugCommand
 import cz.lukynka.minestom.gamejam.commands.GameModeCommand
 import cz.lukynka.minestom.gamejam.commands.GiveCommand
+import cz.lukynka.minestom.gamejam.commands.HubCommand
 import cz.lukynka.minestom.gamejam.commands.LobbyCommand
 import cz.lukynka.minestom.gamejam.commands.QueueCommand
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueue
@@ -55,6 +56,8 @@ fun main() {
 
     val instanceManager = MinecraftServer.getInstanceManager()
     val hub = instanceManager.createInstanceContainer()
+    commandManager.register(HubCommand(hub))
+
     hub.setChunkSupplier(::LightingChunk)
     hub.setGenerator {
         it.modifier().fillHeight(0, 40, Block.STONE)
