@@ -2,14 +2,19 @@ package cz.lukynka.minestom.gamejam.commands
 
 import cz.lukynka.minestom.gamejam.entity.Zombie
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
+import cz.lukynka.shulkerbox.minestom.MapFileReader
+import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
+import cz.lukynka.shulkerbox.minestom.versioncontrol.GitIntegration
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.TextColor
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
-import net.minestom.server.entity.Entity
-import net.minestom.server.entity.EntityType
+import net.minestom.server.command.builder.suggestion.SuggestionEntry
+import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.Player
-import net.minestom.server.entity.metadata.display.ItemDisplayMeta
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
+import kotlin.io.path.*
 
 object DebugCommand : Command("debug") {
     init {
@@ -50,5 +55,62 @@ object DebugCommand : Command("debug") {
                 itemStack = ItemStack.of(Material.values().random())
             }
         }, ArgumentType.Literal("spawn_display_entity"))
+
+        addSubcommand(Shulkerbox)
+    }
+
+    object Shulkerbox : Command("shulkerbox") {
+        init {
+            addSyntax({ sender, context ->
+                GitIntegration.pull()
+                sender.sendMessage("Pulled")
+            }, ArgumentType.Literal("pull"))
+
+            val mapArgument = ArgumentType.String("map")
+            mapArgument.setSuggestionCallback { sender, context, suggestion ->
+                val directory = Path("./shulkerbox/maps/")
+                if (!directory.isDirectory()) {
+                    return@setSuggestionCallback
+                }
+
+                directory.forEachDirectoryEntry("*.shulker") { path ->
+                    suggestion.addEntry(
+                        SuggestionEntry(path.pathString)
+                    )
+                }
+            }
+            mapArgument.setCallback({ sender, _ ->
+                sender.sendMessage("invalid map!")
+            })
+
+            addSyntax({ sender, context ->
+                if (sender !is Player) return@addSyntax
+
+                val path = Path(context.get(mapArgument))
+                if (!path.exists()) {
+                    sender.sendMessage("Map doesn't exist")
+                    return@addSyntax
+                }
+
+                val map = MapFileReader.read(path.toFile())
+                        .toMinestomMap(sender.position, sender.instance)
+                map.placeSchematicAsync()
+                    .thenRun {
+                        sender.teleport(Pos(map.getPoint("spawn").location))
+                        sender.sendMessage(
+                            Component.text("Placed ")
+                                .append(
+                                    Component.text(
+                                        path.toString(),
+                                        TextColor.color(0x696969)
+                                    )
+                                )
+                                .append(Component.text("!"))
+                                .appendNewline()
+                                .append(Component.text("Teleported you to spawn!"))
+                        )
+                    }
+            }, ArgumentType.Literal("place"), mapArgument)
+        }
     }
 }
