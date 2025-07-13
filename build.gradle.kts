@@ -23,6 +23,9 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:2.0.9")
     api("cz.lukynka:pretty-log:1.5")
 
+    // box
+    implementation("cz.lukynka.shulkerbox:minestom:3.3")
+
     // other
     api("cz.lukynka:kotlin-bindables:2.2")
 }
