@@ -11,6 +11,7 @@ import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.command.builder.suggestion.SuggestionEntry
 import net.minestom.server.coordinate.Pos
+import net.minestom.server.entity.ItemEntity
 import net.minestom.server.entity.Player
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
@@ -44,6 +45,12 @@ object DebugCommand : Command("debug") {
                 itemStack = context.get(itemArg)
             }
         }, ArgumentType.Literal("spawn_display_entity"), itemArg)
+
+        addSyntax({ sender, context ->
+            if (sender !is Player) return@addSyntax
+
+            sender.inventory.addItemStack(context.get(itemArg))
+        }, ArgumentType.Literal("give"), itemArg)
 
         addSyntax({ sender, context ->
             if (sender !is Player) return@addSyntax
