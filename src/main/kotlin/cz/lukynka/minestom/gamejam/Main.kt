@@ -1,12 +1,7 @@
 package cz.lukynka.minestom.gamejam
 
-import cz.lukynka.minestom.gamejam.commands.CrashCommand
 import cz.lukynka.minestom.gamejam.combat.CombatManager
-import cz.lukynka.minestom.gamejam.commands.DebugCommand
-import cz.lukynka.minestom.gamejam.commands.GameModeCommand
-import cz.lukynka.minestom.gamejam.commands.GiveCommand
-import cz.lukynka.minestom.gamejam.commands.LobbyCommand
-import cz.lukynka.minestom.gamejam.commands.QueueCommand
+import cz.lukynka.minestom.gamejam.commands.*
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueue
 import cz.lukynka.minestom.gamejam.game.queue.PublicQueue
 import cz.lukynka.minestom.gamejam.game.queue.Queue
@@ -16,10 +11,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
-import net.minestom.server.entity.LivingEntity
 import net.minestom.server.entity.Player
-import net.minestom.server.entity.damage.DamageType
-import net.minestom.server.event.entity.EntityAttackEvent
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
 import net.minestom.server.extras.MojangAuth
 import net.minestom.server.instance.LightingChunk
