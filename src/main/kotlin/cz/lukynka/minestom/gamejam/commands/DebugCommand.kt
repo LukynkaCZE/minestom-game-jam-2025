@@ -3,6 +3,7 @@
 package cz.lukynka.minestom.gamejam.commands
 
 import cz.lukynka.minestom.gamejam.entity.Zombie
+import cz.lukynka.minestom.gamejam.extensions.round
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
 import cz.lukynka.shulkerbox.minestom.MapFileReader
 import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
@@ -12,12 +13,10 @@ import net.kyori.adventure.text.format.TextColor
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.command.builder.suggestion.SuggestionEntry
-import net.minestom.server.component.DataComponent
 import net.minestom.server.component.DataComponentMap
 import net.minestom.server.component.DataComponents
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.coordinate.Vec
-import net.minestom.server.entity.ItemEntity
 import net.minestom.server.entity.Player
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
@@ -58,7 +57,9 @@ object DebugCommand : Command("debug") {
 
             spawnItemDisplay(
                 sender.instance,
-                sender.position.withView(0f, 0f)
+                sender.position
+                    .withView(0f, 0f)
+                    .add(-8.5, 7.0, -8.5)
             ) {
                 itemStack = ItemStack.of(
                     Material.STICK,
@@ -124,7 +125,7 @@ object DebugCommand : Command("debug") {
                 }
 
                 val map = MapFileReader.read(path.toFile())
-                        .toMinestomMap(sender.position, sender.instance)
+                        .toMinestomMap(sender.position.round(), sender.instance)
                 map.placeSchematicAsync()
                     .thenRun {
                         sender.teleport(Pos(map.getPoint("spawn").location))
