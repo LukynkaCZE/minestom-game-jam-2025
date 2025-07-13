@@ -1,5 +1,6 @@
 package cz.lukynka.minestom.gamejam.commands
 
+import cz.lukynka.minestom.gamejam.game.GameInstanceImpl
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueueImpl
 import cz.lukynka.minestom.gamejam.privateQueues
 import cz.lukynka.minestom.gamejam.utils.clickableCommand
@@ -89,6 +90,30 @@ object LobbyCommand : Command("lobby", "private_queue") {
 
             queue.enqueue(sender)
         }, ArgumentType.Literal("accept"), playerArgument)
+
+        addSyntax({ sender, context ->
+            if (sender !is Player) return@addSyntax
+
+            GameInstanceImpl(listOf(sender))
+        }, ArgumentType.Literal("solo"))
+
+        addSyntax({ sender, context ->
+            if (sender !is Player) return@addSyntax
+
+            val queue = privateQueues[sender]
+            if (queue == null) {
+                sender.sendMessage("You don't own any lobbies!")
+                return@addSyntax
+            }
+
+            queue.forceMakeTeam()
+                .onSuccess { players ->
+                    GameInstanceImpl(players)
+                }
+                .onFailure { err ->
+                    sender.sendMessage(err.message.toString())
+                }
+        }, ArgumentType.Literal("start"))
     }
 
     private fun CommandSender.showUsage() {
@@ -99,6 +124,7 @@ object LobbyCommand : Command("lobby", "private_queue") {
             /lobby accept <id> - accept invitation to lobby
             /lobby start - start the game
             /lobby leave - leave the lobby
+            /lobby solo - start solo game instantly
         """.trimIndent())
     }
 }
