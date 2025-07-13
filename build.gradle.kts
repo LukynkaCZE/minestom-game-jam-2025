@@ -24,7 +24,7 @@ dependencies {
     api("cz.lukynka:pretty-log:1.5")
 
     // box
-    implementation("cz.lukynka.shulkerbox:minestom:3.3")
+    implementation("cz.lukynka.shulkerbox:minestom:3.4")
 
     // other
     api("cz.lukynka:kotlin-bindables:2.2")
