@@ -3,6 +3,7 @@ package cz.lukynka.minestom.gamejam
 import cz.lukynka.minestom.gamejam.commands.CrashCommand
 import cz.lukynka.minestom.gamejam.commands.DebugCommand
 import cz.lukynka.minestom.gamejam.commands.GameModeCommand
+import cz.lukynka.minestom.gamejam.commands.GiveCommand
 import cz.lukynka.minestom.gamejam.commands.LobbyCommand
 import cz.lukynka.minestom.gamejam.commands.QueueCommand
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueue
@@ -50,6 +51,7 @@ fun main() {
     commandManager.register(DebugCommand)
     commandManager.register(GameModeCommand)
     commandManager.register(CrashCommand)
+    commandManager.register(GiveCommand)
 
     val instanceManager = MinecraftServer.getInstanceManager()
     val hub = instanceManager.createInstanceContainer()

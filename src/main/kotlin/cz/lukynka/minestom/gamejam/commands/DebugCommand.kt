@@ -74,12 +74,6 @@ object DebugCommand : Command("debug") {
         addSyntax({ sender, context ->
             if (sender !is Player) return@addSyntax
 
-            sender.inventory.addItemStack(context.get(itemArg))
-        }, ArgumentType.Literal("give"), itemArg)
-
-        addSyntax({ sender, context ->
-            if (sender !is Player) return@addSyntax
-
             spawnItemDisplay(
                 sender.instance,
                 sender.position.withView(0f, 0f)
