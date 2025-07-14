@@ -4,6 +4,7 @@ package cz.lukynka.minestom.gamejam.game
 
 import cz.lukynka.minestom.gamejam.Disposable
 import cz.lukynka.minestom.gamejam.apis.Bossbar
+import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.YELLOW_69
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.IS_NOT_READY
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.IS_READY
@@ -38,7 +39,6 @@ class Elevator(
     override val players: List<Player>
 ) : PlayerListAudience, Disposable {
     companion object {
-        val map = shulkerMap("elevator")
         const val ELEVATOR_HEIGHT = 14.0
         const val ELEVATOR_WIDTH = 15.0 + 2.0 // 15 is actual elevator width. off by two somehow
         const val ELEVATORS_N = 4
@@ -59,7 +59,7 @@ class Elevator(
     val playersReady = mutableSetOf<Player>()
     private val bar = Bossbar(bossBarTitle(), 0f, BossBar.Color.PURPLE, BossBar.Overlay.NOTCHED_6)
 
-    private val map = Companion.map.toMinestomMap(origin, world)
+    private val map = ShulkerBoxMaps.elevator.toMinestomMap(origin, world)
     private val spawn = map.getPoint("spawn").toPos()
 
     private val elevatorSpawn = spawn.withView(0f, 0f).add(-ELEVATOR_WIDTH/2, ELEVATOR_SPAWN_OFFSET, -ELEVATOR_WIDTH/2)
