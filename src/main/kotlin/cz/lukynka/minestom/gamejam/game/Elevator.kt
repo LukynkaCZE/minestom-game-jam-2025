@@ -97,15 +97,10 @@ class Elevator(
                 player.setInstance(world, spawn)
             }.thenRun {
                 bar.addViewer(player)
-                player.sendMessage("You are in elevator of doom. it's not finished yet")
             }
         }
 
         return CompletableFuture.allOf(*futures.toTypedArray())
-            .thenRun {
-                sendMessage("Every player is in elevator of doom.")
-                // t*do
-            }
     }
 
     fun playerReadyToggle(player: Player) {
