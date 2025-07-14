@@ -33,7 +33,7 @@ class Elevator(
         val map = shulkerMap("elevator")
         const val ELEVATOR_HEIGHT = 14.0
         const val ELEVATOR_WIDTH = 15.0 + 2.0 // 15 is actual elevator width. off by two somehow
-        const val ELEVATORS_N = 5
+        const val ELEVATORS_N = 4
         const val ELEVATOR_SPAWN_OFFSET = -ELEVATOR_HEIGHT
 
         val speedPerSecond = Vec(0.0, 7.0, 0.0)
