@@ -16,6 +16,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
+import net.minestom.server.entity.GameMode
 import net.minestom.server.entity.LivingEntity
 import net.minestom.server.entity.Player
 import net.minestom.server.entity.damage.DamageType
@@ -72,6 +73,7 @@ fun main() {
 
         event.spawningInstance = hub
         player.respawnPoint = hubSpawnPoint
+        player.gameMode = GameMode.ADVENTURE
 
         if (player.isAdmin()) {
             player.permissionLevel = 4
