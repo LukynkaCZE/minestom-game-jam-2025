@@ -22,6 +22,14 @@ class PrivateQueueImpl(override val owner: Player) : AbstractQueue(), PrivateQue
         bar.progress.value = (_players.size / 4f).coerceAtMost(1f)
     }
 
+    override fun dequeue(player: Player) {
+        if (player == owner) {
+            dispose()
+        } else {
+            super.dequeue(player)
+        }
+    }
+
     override fun forceMakeTeam(): Result<List<Player>> {
         if (_players.isEmpty) {
             return Result.failure(NoSuchElementException("`players` is empty"))

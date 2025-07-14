@@ -1,9 +1,10 @@
 package cz.lukynka.minestom.gamejam.game.queue
 
+import cz.lukynka.minestom.gamejam.Disposable
 import cz.lukynka.minestom.gamejam.utils.PlayerListAudience
 import net.minestom.server.entity.Player
 
-interface Queue : PlayerListAudience {
+interface Queue : PlayerListAudience, Disposable {
     override val players: List<Player>
 
     /**
@@ -25,4 +26,10 @@ interface Queue : PlayerListAudience {
      * Returns a list of players for a single game, if there's at least one player in queue
      */
     fun forceMakeTeam(): Result<List<Player>>
+
+    override fun dispose() {
+        players.forEach {
+            dequeue(it)
+        }
+    }
 }
