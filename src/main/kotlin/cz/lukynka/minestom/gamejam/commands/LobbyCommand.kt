@@ -1,14 +1,16 @@
 package cz.lukynka.minestom.gamejam.commands
 
-import cz.lukynka.minestom.gamejam.constants.StyleConstants.RED_E
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.GREY_69
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.RED_69
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.SCREAMING_GREY
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.ALREADY_INVITED
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.INVITED_PLAYER_IS_IN_LOBBY
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NO_OWNED_LOBBIES
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.lobbyAcceptCmdMsg
 import cz.lukynka.minestom.gamejam.game.GameInstance
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueueImpl
 import cz.lukynka.minestom.gamejam.player2QueueMap
 import cz.lukynka.minestom.gamejam.privateQueues
-import cz.lukynka.minestom.gamejam.utils.clickableCommand
 import net.kyori.adventure.text.Component
 import net.minestom.server.command.CommandSender
 import net.minestom.server.command.builder.Command
@@ -51,29 +53,22 @@ object LobbyCommand : Command("lobby", "private_queue") {
 
             val queue = privateQueues[sender]
             if (queue == null) {
-                sender.sendMessage(Component.text("You don't own any lobbies!", RED_E))
+                sender.sendMessage(NO_OWNED_LOBBIES)
                 sender.showUsage()
                 return@addSyntax
             }
 
             if (queue.players.contains(player)) {
-                sender.sendMessage("Player is already in the lobby!")
+                sender.sendMessage(INVITED_PLAYER_IS_IN_LOBBY)
                 return@addSyntax
             }
             if (queue.invitedPlayers.contains(player)) {
-                sender.sendMessage("You already invited this player!")
+                sender.sendMessage(ALREADY_INVITED)
                 return@addSyntax
             }
 
             queue.invite(player)
-            player.sendMessage(
-                Component.text("You were invited to a private lobby by ")
-                    .append(sender.name)
-                    .appendNewline()
-                    .append(Component.text("Join by running "))
-                    .append(clickableCommand("/lobby accept ${sender.username}"))
-                    .append(Component.text(" command."))
-            )
+            player.sendMessage(lobbyAcceptCmdMsg(sender))
         }, ArgumentType.Literal("invite"), playerArgument)
 
         addSyntax({ sender, context ->
