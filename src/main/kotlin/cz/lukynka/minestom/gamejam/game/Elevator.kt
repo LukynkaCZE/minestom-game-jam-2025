@@ -78,7 +78,7 @@ class Elevator(
             }
         }
 
-        world.loadChunks(map.origin, map.size).thenCompose {
+        world.loadChunks(map.origin, map.origin.add(map.size)).thenCompose {
             map.placeSchematicAsync()
         }.thenRun {
             spawnJob.join()

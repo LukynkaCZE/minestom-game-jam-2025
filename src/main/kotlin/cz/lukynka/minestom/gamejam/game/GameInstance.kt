@@ -8,6 +8,7 @@ import cz.lukynka.minestom.gamejam.extensions.toPos
 import cz.lukynka.minestom.gamejam.hub
 import cz.lukynka.minestom.gamejam.hubSpawnPoint
 import cz.lukynka.minestom.gamejam.utils.PlayerListAudience
+import cz.lukynka.minestom.gamejam.utils.loadChunks
 import cz.lukynka.minestom.gamejam.utils.schedule
 import cz.lukynka.minestom.gamejam.world2GameInstanceMap
 import cz.lukynka.shulkerbox.minestom.MinestomMap
@@ -101,7 +102,9 @@ class GameInstance(
         val map = map.toMinestomMap(spawn, world)
         maps.add(map)
 
-        return map.placeSchematicAsync().thenApply {
+        return world.loadChunks(map.origin, map.origin.add(map.size)).thenCompose {
+            map.placeSchematicAsync()
+        }.thenApply {
             map
         }
     }
