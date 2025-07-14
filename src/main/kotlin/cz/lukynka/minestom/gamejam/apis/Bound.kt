@@ -1,6 +1,7 @@
-package cz.lukynka.minestom.gamejam
+package cz.lukynka.minestom.gamejam.apis
 
 import cz.lukynka.bindables.BindablePool
+import cz.lukynka.minestom.gamejam.Disposable
 import cz.lukynka.minestom.gamejam.event.EventPool
 import cz.lukynka.minestom.gamejam.extensions.location
 import cz.lukynka.minestom.gamejam.extensions.toLocation
