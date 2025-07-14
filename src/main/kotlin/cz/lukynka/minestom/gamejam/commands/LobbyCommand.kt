@@ -95,6 +95,28 @@ object LobbyCommand : Command("lobby", "private_queue") {
         addSyntax({ sender, context ->
             if (sender !is Player) return@addSyntax
 
+            val queue = player2QueueMap[sender]
+            if (queue != null) {
+                queue.dequeue(sender)
+                sender.sendMessage(
+                    Component.text(
+                        "Left queue",
+                        TextColor.color(0xaaaaaa)
+                    )
+                )
+            } else {
+                sender.sendMessage(
+                    Component.text(
+                        "Not in queue!",
+                        TextColor.color(0xff6969)
+                    )
+                )
+            }
+        }, ArgumentType.Literal("leave"))
+
+        addSyntax({ sender, context ->
+            if (sender !is Player) return@addSyntax
+
             player2QueueMap[sender]?.dequeue(sender)
 
             GameInstance(listOf(sender))
