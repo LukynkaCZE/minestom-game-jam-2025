@@ -1,6 +1,8 @@
 package cz.lukynka.minestom.gamejam
 
 import cz.lukynka.minestom.gamejam.combat.CombatManager
+import cz.lukynka.minestom.gamejam.combat.DoubleJump
+import cz.lukynka.minestom.gamejam.combat.TeamManager
 import cz.lukynka.minestom.gamejam.commands.*
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueue
 import cz.lukynka.minestom.gamejam.game.queue.PublicQueue
@@ -13,6 +15,7 @@ import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.Player
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
+import net.minestom.server.event.player.PlayerSpawnEvent
 import net.minestom.server.extras.MojangAuth
 import net.minestom.server.instance.LightingChunk
 import net.minestom.server.instance.block.Block
@@ -49,6 +52,7 @@ fun main() {
     commandManager.register(GameModeCommand)
     commandManager.register(CrashCommand)
     commandManager.register(GiveCommand)
+    commandManager.register(HealCommand)
 
     val instanceManager = MinecraftServer.getInstanceManager()
     val hub = instanceManager.createInstanceContainer()
@@ -57,7 +61,9 @@ fun main() {
         it.modifier().fillHeight(0, 40, Block.STONE)
     }
 
+    TeamManager.registerTeams()
     CombatManager.init()
+    DoubleJump.init()
 
     val globalEventHandler = MinecraftServer.getGlobalEventHandler()
 
@@ -72,6 +78,11 @@ fun main() {
         if (player.isAdmin()) {
             player.permissionLevel = 4
         }
+    }
+
+    globalEventHandler.addListener(PlayerSpawnEvent::class.java) { event ->
+        val player = event.player
+        player.isAllowFlying = true
     }
 
     val packetManager = MinecraftServer.getPacketListenerManager()

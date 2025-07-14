@@ -8,3 +8,9 @@ enum class ElementReaction(val first: ElementType, val second: ElementType, val 
     HYPERMELT(ElementType.ICE, ElementType.FIRE, "Hypermelt", "<#ff9e61>"),
     SUPERCONDUCT(ElementType.ICE, ElementType.ELECTRICAL, "Superconduct", "<#6161ff>"),
 }
+
+fun getElementReaction(first: ElementType, second: ElementType): ElementReaction? {
+    return ElementReaction.entries.firstOrNull {
+        (it.first == first && it.second == second) || (it.first == second && it.second == first)
+    }
+}

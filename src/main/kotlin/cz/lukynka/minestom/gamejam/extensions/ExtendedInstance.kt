@@ -32,3 +32,8 @@ fun Instance.playSound(sound: SoundEvent, location: Pos, volume: Float = 1f, pit
 fun Instance.spawnParticle(particle: Particle, location: Pos, offset: Vector3d = Vector3d(0.0), speed: Float = 0.0f, amount: Int = 1, alwaysShow: Boolean = false) {
     this.players.sendPacket(ParticlePacket(particle, false, false, location, Vec(offset.x, offset.y, offset.z), speed, amount))
 }
+
+fun Instance.spawnBlood(location: Pos, offset: Vector3d, amount: Int) {
+    this.players.sendPacket(ParticlePacket(Particle.BLOCK.withBlock(Block.REDSTONE_BLOCK), false, false, location, Vec(offset.x, offset.y, offset.z), 1f, amount))
+}
+

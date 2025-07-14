@@ -5,12 +5,14 @@ package cz.lukynka.minestom.gamejam.commands
 import cz.lukynka.minestom.gamejam.combat.ElementType
 import cz.lukynka.minestom.gamejam.entity.Zombie
 import cz.lukynka.minestom.gamejam.extensions.round
+import cz.lukynka.minestom.gamejam.extensions.sendPacket
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
 import cz.lukynka.shulkerbox.minestom.MapFileReader
 import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
 import cz.lukynka.shulkerbox.minestom.versioncontrol.GitIntegration
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
+import net.minestom.server.color.Color
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.command.builder.suggestion.SuggestionEntry
@@ -18,10 +20,16 @@ import net.minestom.server.component.DataComponentMap
 import net.minestom.server.component.DataComponents
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.coordinate.Vec
+import net.minestom.server.entity.Entity
+import net.minestom.server.entity.EntityType
 import net.minestom.server.entity.Player
+import net.minestom.server.entity.metadata.projectile.FireworkRocketMeta
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 import net.minestom.server.item.component.CustomModelData
+import net.minestom.server.item.component.FireworkExplosion
+import net.minestom.server.item.component.FireworkList
+import net.minestom.server.network.packet.server.play.EntityStatusPacket
 import kotlin.io.path.*
 
 object DebugCommand : Command("debug") {
@@ -83,6 +91,19 @@ object DebugCommand : Command("debug") {
             }
         }, ArgumentType.Literal("spawn_display_entity"))
 
+        addSyntax({ sender, context ->
+            val player = sender as Player
+
+            val firework = Entity(EntityType.FIREWORK_ROCKET)
+            val meta = firework.entityMeta as FireworkRocketMeta
+            meta.fireworkInfo = ItemStack.builder(Material.FIREWORK_ROCKET).set(DataComponents.FIREWORKS, FireworkList(1, listOf(FireworkExplosion(FireworkExplosion.Shape.LARGE_BALL, listOf(Color(255, 255, 255)), listOf(), true, true)))).build()
+
+            firework.setNoGravity(true)
+            firework.setInstance(player.instance).thenAccept {
+                firework.teleport(player.position)
+            }
+        }, ArgumentType.Literal("firework"))
+
         addSubcommand(Shulkerbox)
     }
 
@@ -120,7 +141,7 @@ object DebugCommand : Command("debug") {
                 }
 
                 val map = MapFileReader.read(path.toFile())
-                        .toMinestomMap(sender.position.round(), sender.instance)
+                    .toMinestomMap(sender.position.round(), sender.instance)
                 map.placeSchematicAsync()
                     .thenRun {
                         sender.teleport(Pos(map.getPoint("spawn").location))

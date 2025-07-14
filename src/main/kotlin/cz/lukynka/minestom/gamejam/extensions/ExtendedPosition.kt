@@ -6,7 +6,7 @@ import net.minestom.server.instance.Instance
 import kotlin.math.round
 
 fun Pos.toLocation(world: Instance): Location {
-    return Location(this.x, this.y, this.z, world)
+    return Location(this.x, this.y, this.z, this.yaw, this.pitch, world)
 }
 
 fun Pos.round(): Pos {
