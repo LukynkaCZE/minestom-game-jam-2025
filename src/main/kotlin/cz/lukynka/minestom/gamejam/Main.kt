@@ -40,6 +40,8 @@ val publicQueue = PublicQueue()
 val privateQueues = Object2ObjectArrayMap<Player, PrivateQueue>()
 val player2QueueMap = Object2ObjectOpenHashMap<Player, Queue>()
 
+val hubSpawnPoint = Pos(0.5, 42.0, 0.5)
+
 fun main() {
     ShulkerboxConfigManager.load()
     GitIntegration.load()
@@ -56,7 +58,7 @@ fun main() {
 
     val instanceManager = MinecraftServer.getInstanceManager()
     val hub = instanceManager.createInstanceContainer()
-    commandManager.register(HubCommand(hub))
+    commandManager.register(HubCommand(hub, hubSpawnPoint))
 
     hub.setChunkSupplier(::LightingChunk)
     hub.setGenerator {
@@ -69,7 +71,7 @@ fun main() {
         val player = event.player
 
         event.spawningInstance = hub
-        player.respawnPoint = Pos(0.5, 42.0, 0.5)
+        player.respawnPoint = hubSpawnPoint
 
         if (player.isAdmin()) {
             player.permissionLevel = 4
