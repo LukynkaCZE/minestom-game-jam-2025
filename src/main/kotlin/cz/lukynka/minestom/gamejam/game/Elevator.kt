@@ -60,7 +60,7 @@ class Elevator(
     private val bar = Bossbar(bossBarTitle(), 0f, BossBar.Color.PURPLE, BossBar.Overlay.NOTCHED_6)
 
     private val map = ShulkerBoxMaps.elevator.toMinestomMap(origin, world)
-    private val spawn = map.getPoint("spawn").toPos()
+    val spawn = map.getPoint("spawn").toPos()
 
     private val elevatorSpawn = spawn.withView(0f, 0f).add(-ELEVATOR_WIDTH/2, ELEVATOR_SPAWN_OFFSET, -ELEVATOR_WIDTH/2)
     private val elevatorPoofPlace = elevatorSpawn.y + ELEVATORS_N * ELEVATOR_HEIGHT - 1.0 // off by one my beloved
