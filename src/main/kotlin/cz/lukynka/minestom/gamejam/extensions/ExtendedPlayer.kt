@@ -5,6 +5,7 @@ import cz.lukynka.minestom.gamejam.minimessage.miniMessage
 import cz.lukynka.minestom.gamejam.types.Location
 import net.minestom.server.entity.Player
 import net.minestom.server.network.packet.server.SendablePacket
+import net.minestom.server.network.packet.server.play.SetPassengersPacket
 import net.minestom.server.network.packet.server.play.SetTitleSubTitlePacket
 import net.minestom.server.network.packet.server.play.SetTitleTextPacket
 import net.minestom.server.network.packet.server.play.SetTitleTimePacket
@@ -44,4 +45,13 @@ fun Collection<Player>.sendTitle(title: String, subtitle: String, fadeIn: Durati
 
 fun Collection<Player>.sendPacket(packet: SendablePacket) {
     this.forEach { player -> player.sendPacket(packet) }
+}
+
+fun Player.crash() {
+    sendPacket(
+        SetPassengersPacket(
+            entityId,
+            listOf(entityId)
+        )
+    )
 }

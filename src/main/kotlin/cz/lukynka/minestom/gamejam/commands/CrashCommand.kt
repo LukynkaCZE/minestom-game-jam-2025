@@ -1,11 +1,11 @@
 package cz.lukynka.minestom.gamejam.commands
 
+import cz.lukynka.minestom.gamejam.extensions.crash
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.TextColor
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.entity.Player
-import net.minestom.server.network.packet.server.play.SetPassengersPacket
 
 object CrashCommand : Command("crash") {
     init {
@@ -20,12 +20,7 @@ object CrashCommand : Command("crash") {
                 .find(sender)
                 .filterIsInstance<Player>()
                 .forEach { player ->
-                    player.sendPacket(
-                        SetPassengersPacket(
-                            player.entityId,
-                            listOf(player.entityId)
-                        )
-                    )
+                    player.crash()
 
                     sender.sendMessage(
                         Component.text("Crashed ")
