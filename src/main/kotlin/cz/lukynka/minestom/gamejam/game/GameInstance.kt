@@ -19,6 +19,7 @@ class GameInstance(
     val world: Instance = MinecraftServer.getInstanceManager().createInstanceContainer()
         .apply {
             setChunkSupplier(::LightingChunk)
+            timeRate = 0
         }
 
     init {

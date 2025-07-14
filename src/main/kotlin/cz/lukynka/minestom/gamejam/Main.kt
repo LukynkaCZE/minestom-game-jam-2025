@@ -58,6 +58,7 @@ fun main() {
     commandManager.register(HubCommand)
 
     hub = MinecraftServer.getInstanceManager().createInstanceContainer()
+    hub.timeRate = 0
     hub.setChunkSupplier(::LightingChunk)
     hub.setGenerator {
         it.modifier().fillHeight(0, 40, Block.STONE)
