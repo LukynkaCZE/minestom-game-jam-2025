@@ -3,10 +3,12 @@
 package cz.lukynka.minestom.gamejam.commands
 
 import cz.lukynka.minestom.gamejam.combat.ElementType
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.GREY_69
 import cz.lukynka.minestom.gamejam.entity.Zombie
 import cz.lukynka.minestom.gamejam.extensions.round
 import cz.lukynka.minestom.gamejam.extensions.sendPacket
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
+import cz.lukynka.minestom.gamejam.world2GameInstanceMap
 import cz.lukynka.shulkerbox.minestom.MapFileReader
 import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
 import cz.lukynka.shulkerbox.minestom.versioncontrol.GitIntegration
@@ -105,6 +107,7 @@ object DebugCommand : Command("debug") {
         }, ArgumentType.Literal("firework"))
 
         addSubcommand(Shulkerbox)
+        addSubcommand(GameCommand)
     }
 
     object Shulkerbox : Command("shulkerbox") {
@@ -150,7 +153,7 @@ object DebugCommand : Command("debug") {
                                 .append(
                                     Component.text(
                                         path.toString(),
-                                        TextColor.color(0x696969)
+                                        GREY_69
                                     )
                                 )
                                 .append(Component.text("!"))
@@ -159,6 +162,17 @@ object DebugCommand : Command("debug") {
                         )
                     }
             }, ArgumentType.Literal("place"), mapArgument)
+        }
+    }
+
+    object GameCommand : Command("game") {
+        init {
+            addSyntax({ sender, context ->
+                if (sender !is Player) return@addSyntax
+
+                val game = world2GameInstanceMap[sender.instance]
+                game?.dispose()
+            }, ArgumentType.Literal("dispose"))
         }
     }
 }

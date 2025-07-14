@@ -1,10 +1,17 @@
 package cz.lukynka.minestom.gamejam.commands
 
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.GREY_69
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.RED_69
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.SCREAMING_GREY
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.ALREADY_INVITED
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.INVITED_PLAYER_IS_IN_LOBBY
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NO_OWNED_LOBBIES
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.lobbyAcceptCmdMsg
+import cz.lukynka.minestom.gamejam.game.GameInstance
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueueImpl
+import cz.lukynka.minestom.gamejam.player2QueueMap
 import cz.lukynka.minestom.gamejam.privateQueues
-import cz.lukynka.minestom.gamejam.utils.clickableCommand
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.TextColor
 import net.minestom.server.command.CommandSender
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
@@ -25,7 +32,7 @@ object LobbyCommand : Command("lobby", "private_queue") {
                     .append(
                         Component.text(
                             "/lobby invite <player>",
-                            TextColor.color(0x696969) // nice
+                            GREY_69
                         )
                     )
                     .append(Component.text(" command"))
@@ -46,29 +53,22 @@ object LobbyCommand : Command("lobby", "private_queue") {
 
             val queue = privateQueues[sender]
             if (queue == null) {
-                sender.sendMessage(Component.text("You don't own any lobbies!", TextColor.color(0xe00000)))
+                sender.sendMessage(NO_OWNED_LOBBIES)
                 sender.showUsage()
                 return@addSyntax
             }
 
             if (queue.players.contains(player)) {
-                sender.sendMessage("Player is already in the lobby!")
+                sender.sendMessage(INVITED_PLAYER_IS_IN_LOBBY)
                 return@addSyntax
             }
             if (queue.invitedPlayers.contains(player)) {
-                sender.sendMessage("You already invited this player!")
+                sender.sendMessage(ALREADY_INVITED)
                 return@addSyntax
             }
 
             queue.invite(player)
-            player.sendMessage(
-                Component.text("You were invited to a private lobby by ")
-                    .append(sender.name)
-                    .appendNewline()
-                    .append(Component.text("Join by running "))
-                    .append(clickableCommand("/lobby accept ${sender.username}"))
-                    .append(Component.text(" command."))
-            )
+            player.sendMessage(lobbyAcceptCmdMsg(sender))
         }, ArgumentType.Literal("invite"), playerArgument)
 
         addSyntax({ sender, context ->
@@ -89,6 +89,55 @@ object LobbyCommand : Command("lobby", "private_queue") {
 
             queue.enqueue(sender)
         }, ArgumentType.Literal("accept"), playerArgument)
+
+        addSyntax({ sender, context ->
+            if (sender !is Player) return@addSyntax
+
+            val queue = player2QueueMap[sender]
+            if (queue != null) {
+                queue.dequeue(sender)
+                sender.sendMessage(
+                    Component.text(
+                        "Left queue",
+                        SCREAMING_GREY
+                    )
+                )
+            } else {
+                sender.sendMessage(
+                    Component.text(
+                        "Not in queue!",
+                        RED_69
+                    )
+                )
+            }
+        }, ArgumentType.Literal("leave"))
+
+        addSyntax({ sender, context ->
+            if (sender !is Player) return@addSyntax
+
+            player2QueueMap[sender]?.dequeue(sender)
+
+            GameInstance(listOf(sender))
+                .start()
+        }, ArgumentType.Literal("solo"))
+
+        addSyntax({ sender, context ->
+            if (sender !is Player) return@addSyntax
+
+            val queue = privateQueues[sender]
+            if (queue == null) {
+                sender.sendMessage("You don't own any lobbies!")
+                return@addSyntax
+            }
+
+            queue.forceMakeTeam()
+                .onSuccess { players ->
+                    GameInstance(players).start()
+                }
+                .onFailure { err ->
+                    sender.sendMessage(err.message.toString())
+                }
+        }, ArgumentType.Literal("start"))
     }
 
     private fun CommandSender.showUsage() {
@@ -99,6 +148,7 @@ object LobbyCommand : Command("lobby", "private_queue") {
             /lobby accept <id> - accept invitation to lobby
             /lobby start - start the game
             /lobby leave - leave the lobby
+            /lobby solo - start solo game instantly
         """.trimIndent())
     }
 }

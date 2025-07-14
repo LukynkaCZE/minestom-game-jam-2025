@@ -4,6 +4,7 @@ import cz.lukynka.minestom.gamejam.combat.CombatManager
 import cz.lukynka.minestom.gamejam.combat.DoubleJump
 import cz.lukynka.minestom.gamejam.combat.TeamManager
 import cz.lukynka.minestom.gamejam.commands.*
+import cz.lukynka.minestom.gamejam.game.GameInstance
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueue
 import cz.lukynka.minestom.gamejam.game.queue.PublicQueue
 import cz.lukynka.minestom.gamejam.game.queue.Queue
@@ -13,10 +14,13 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
+import net.minestom.server.entity.GameMode
 import net.minestom.server.entity.Player
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
 import net.minestom.server.event.player.PlayerSpawnEvent
 import net.minestom.server.extras.MojangAuth
+import net.minestom.server.instance.Instance
+import net.minestom.server.instance.InstanceContainer
 import net.minestom.server.instance.LightingChunk
 import net.minestom.server.instance.block.Block
 import net.minestom.server.item.ItemStack
@@ -37,6 +41,10 @@ fun Player.isAdmin(): Boolean {
 val publicQueue = PublicQueue()
 val privateQueues = Object2ObjectArrayMap<Player, PrivateQueue>()
 val player2QueueMap = Object2ObjectOpenHashMap<Player, Queue>()
+val world2GameInstanceMap = Object2ObjectArrayMap<Instance, GameInstance>()
+
+lateinit var hub: InstanceContainer
+val hubSpawnPoint = Pos(0.5, 42.0, 0.5)
 
 fun main() {
     ShulkerboxConfigManager.load()
@@ -53,9 +61,11 @@ fun main() {
     commandManager.register(CrashCommand)
     commandManager.register(GiveCommand)
     commandManager.register(HealCommand)
+    commandManager.register(HubCommand)
+    commandManager.register(ReadyCommand)
 
-    val instanceManager = MinecraftServer.getInstanceManager()
-    val hub = instanceManager.createInstanceContainer()
+    hub = MinecraftServer.getInstanceManager().createInstanceContainer()
+    hub.timeRate = 0
     hub.setChunkSupplier(::LightingChunk)
     hub.setGenerator {
         it.modifier().fillHeight(0, 40, Block.STONE)
@@ -71,7 +81,8 @@ fun main() {
         val player = event.player
 
         event.spawningInstance = hub
-        player.respawnPoint = Pos(0.5, 42.0, 0.5)
+        player.respawnPoint = hubSpawnPoint
+        player.gameMode = GameMode.ADVENTURE
 
         player.inventory.addItemStack(ItemStack.of(Material.IRON_SWORD))
 

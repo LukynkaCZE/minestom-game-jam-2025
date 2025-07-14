@@ -1,7 +1,12 @@
 package cz.lukynka.minestom.gamejam.commands
 
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.RED_69
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.SCREAMING_GREY
 import cz.lukynka.minestom.gamejam.isAdmin
+import cz.lukynka.minestom.gamejam.player2QueueMap
 import cz.lukynka.minestom.gamejam.publicQueue
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.TextColor
 import net.minestom.server.command.CommandSender
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.CommandExecutor
@@ -24,11 +29,24 @@ object QueueCommand : Command("queue") {
         }, ArgumentType.Literal("join"))
 
         addSyntax({ sender, context ->
-            if (sender is Player) {
-                publicQueue.dequeue(sender)
-                sender.sendMessage("Removed you from the queue!")
+            if (sender !is Player) return@addSyntax
+
+            val queue = player2QueueMap[sender]
+            if (queue != null) {
+                queue.dequeue(sender)
+                sender.sendMessage(
+                    Component.text(
+                        "Left queue",
+                        SCREAMING_GREY
+                    )
+                )
             } else {
-                sender.sendMessage("Only players can join or leave queue")
+                sender.sendMessage(
+                    Component.text(
+                        "Not in queue!",
+                        RED_69
+                    )
+                )
             }
         }, ArgumentType.Literal("leave"))
 

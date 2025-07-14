@@ -47,11 +47,19 @@ fun Collection<Player>.sendPacket(packet: SendablePacket) {
     this.forEach { player -> player.sendPacket(packet) }
 }
 
-
 fun Player.playSound(sound: AbstractEnemy.SoundRange, location: Pos, volume: Float = 0.8f) {
     this.playSound(sound.sound, location, sound.pitchRange.random(), volume)
 }
 
 fun Player.playSound(sound: SoundEvent, location: Pos, volume: Float = 1f, pitch: Float = 1f) {
     this.sendPacket(SoundEffectPacket(sound, Sound.Source.MASTER, location, volume, pitch, 0))
+}
+
+fun Player.crash() {
+    sendPacket(
+        SetPassengersPacket(
+            entityId,
+            listOf(entityId)
+        )
+    )
 }
