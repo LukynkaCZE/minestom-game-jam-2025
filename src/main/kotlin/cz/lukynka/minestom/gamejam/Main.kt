@@ -1,7 +1,7 @@
 package cz.lukynka.minestom.gamejam
 
-import cz.lukynka.minestom.gamejam.game.Elevator
 import cz.lukynka.minestom.gamejam.commands.*
+import cz.lukynka.minestom.gamejam.game.GameInstance
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueue
 import cz.lukynka.minestom.gamejam.game.queue.PublicQueue
 import cz.lukynka.minestom.gamejam.game.queue.Queue
@@ -17,6 +17,8 @@ import net.minestom.server.entity.Player
 import net.minestom.server.entity.damage.DamageType
 import net.minestom.server.event.entity.EntityAttackEvent
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
+import net.minestom.server.instance.Instance
+import net.minestom.server.instance.InstanceContainer
 import net.minestom.server.instance.LightingChunk
 import net.minestom.server.instance.block.Block
 import net.minestom.server.network.ConnectionState
@@ -35,6 +37,7 @@ fun Player.isAdmin(): Boolean {
 val publicQueue = PublicQueue()
 val privateQueues = Object2ObjectArrayMap<Player, PrivateQueue>()
 val player2QueueMap = Object2ObjectOpenHashMap<Player, Queue>()
+val world2GameInstanceMap = Object2ObjectArrayMap<Instance, GameInstance>()
 
 lateinit var hub: InstanceContainer
 val hubSpawnPoint = Pos(0.5, 42.0, 0.5)

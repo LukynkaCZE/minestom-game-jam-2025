@@ -2,6 +2,7 @@
 
 package cz.lukynka.minestom.gamejam.game
 
+import cz.lukynka.minestom.gamejam.Disposable
 import cz.lukynka.minestom.gamejam.extensions.sendMessage
 import cz.lukynka.minestom.gamejam.extensions.toPos
 import cz.lukynka.minestom.gamejam.utils.PlayerListAudience
@@ -27,7 +28,7 @@ class Elevator(
     private val world: Instance,
     origin: Point,
     override val players: List<Player>
-) : PlayerListAudience {
+) : PlayerListAudience, Disposable {
     companion object {
         val map = shulkerMap("elevator")
         const val ELEVATOR_HEIGHT = 14.0
@@ -96,6 +97,14 @@ class Elevator(
             }
     }
 
+    override fun dispose() {
+        tickTask.cancel()
+        elevatorEntities.forEach {
+            it.remove()
+        }
+        elevatorEntities.clear()
+        readyFuture.completeExceptionally(RuntimeException("elevator is disposed"))
+    }
 
     private fun tick() {
         elevatorEntities.forEach {

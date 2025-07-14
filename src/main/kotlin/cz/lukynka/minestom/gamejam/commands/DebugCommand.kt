@@ -5,6 +5,7 @@ package cz.lukynka.minestom.gamejam.commands
 import cz.lukynka.minestom.gamejam.entity.Zombie
 import cz.lukynka.minestom.gamejam.extensions.round
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
+import cz.lukynka.minestom.gamejam.world2GameInstanceMap
 import cz.lukynka.shulkerbox.minestom.MapFileReader
 import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
 import cz.lukynka.shulkerbox.minestom.versioncontrol.GitIntegration
@@ -83,6 +84,7 @@ object DebugCommand : Command("debug") {
         }, ArgumentType.Literal("spawn_display_entity"))
 
         addSubcommand(Shulkerbox)
+        addSubcommand(GameCommand)
     }
 
     object Shulkerbox : Command("shulkerbox") {
@@ -137,6 +139,17 @@ object DebugCommand : Command("debug") {
                         )
                     }
             }, ArgumentType.Literal("place"), mapArgument)
+        }
+    }
+
+    object GameCommand : Command("game") {
+        init {
+            addSyntax({ sender, context ->
+                if (sender !is Player) return@addSyntax
+
+                val game = world2GameInstanceMap[sender.instance]
+                game?.dispose()
+            }, ArgumentType.Literal("dispose"))
         }
     }
 }

@@ -1,7 +1,8 @@
 package cz.lukynka.minestom.gamejam.commands
 
-import cz.lukynka.minestom.gamejam.game.GameInstanceImpl
+import cz.lukynka.minestom.gamejam.game.GameInstance
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueueImpl
+import cz.lukynka.minestom.gamejam.player2QueueMap
 import cz.lukynka.minestom.gamejam.privateQueues
 import cz.lukynka.minestom.gamejam.utils.clickableCommand
 import net.kyori.adventure.text.Component
@@ -94,7 +95,10 @@ object LobbyCommand : Command("lobby", "private_queue") {
         addSyntax({ sender, context ->
             if (sender !is Player) return@addSyntax
 
-            GameInstanceImpl(listOf(sender))
+            player2QueueMap[sender]?.dequeue(sender)
+
+            GameInstance(listOf(sender))
+                .start()
         }, ArgumentType.Literal("solo"))
 
         addSyntax({ sender, context ->
@@ -108,7 +112,7 @@ object LobbyCommand : Command("lobby", "private_queue") {
 
             queue.forceMakeTeam()
                 .onSuccess { players ->
-                    GameInstanceImpl(players)
+                    GameInstance(players).start()
                 }
                 .onFailure { err ->
                     sender.sendMessage(err.message.toString())

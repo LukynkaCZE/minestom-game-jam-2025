@@ -1,6 +1,6 @@
 package cz.lukynka.minestom.gamejam.game.queue
 
-import cz.lukynka.minestom.gamejam.game.GameInstanceImpl
+import cz.lukynka.minestom.gamejam.game.GameInstance
 import cz.lukynka.minestom.gamejam.utils.truncate
 import net.minestom.server.entity.Player
 
@@ -22,8 +22,8 @@ class PublicQueue : AbstractQueue() {
             // timer is over, force the game
             forceMakeTeam()
                 .onSuccess { players ->
-                    val instance = GameInstanceImpl(players)
-                    // TODO
+                    GameInstance(players)
+                        .start()
                 }
             timer = LOBBY_WAIT_TIME_TICKS
             bar.progress.value = 0f
@@ -32,8 +32,8 @@ class PublicQueue : AbstractQueue() {
             // try and make a full sized team
             makeTeam()
                 .onSuccess { players ->
-                    val instance = GameInstanceImpl(players)
-                    // TODO
+                    GameInstance(players)
+                        .start()
                     timer = LOBBY_WAIT_TIME_TICKS
                 }
             bar.progress.value = 1 - (timer.toFloat() / LOBBY_WAIT_TIME_TICKS)
