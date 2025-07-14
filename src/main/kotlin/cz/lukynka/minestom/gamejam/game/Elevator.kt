@@ -21,6 +21,7 @@ import net.minestom.server.instance.Instance
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 import net.minestom.server.item.component.CustomModelData
+import net.minestom.server.timer.Task
 import net.minestom.server.timer.TaskSchedule
 import java.util.concurrent.CompletableFuture
 
@@ -77,7 +78,7 @@ class Elevator(
         }
     }
     private val tickTask = MinecraftServer.getSchedulerManager()
-        .scheduleTask(::tick, TaskSchedule.immediate(), TaskSchedule.tick(1))
+        .scheduleTask(::tick, TaskSchedule.future(readyFuture), TaskSchedule.tick(1))
 
     fun start(): CompletableFuture<Void> {
         val futures = players.map { player ->
