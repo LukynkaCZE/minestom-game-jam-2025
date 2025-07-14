@@ -61,10 +61,6 @@ class Elevator(
     val playersReady = mutableSetOf<Player>()
     private val bar = Bossbar(bossBarTitle(), 0f, BossBar.Color.PURPLE, BossBar.Overlay.NOTCHED_6)
 
-    init {
-        players.forEach(bar::addViewer)
-    }
-
     private val map = Companion.map.toMinestomMap(origin, world)
     private val spawn = map.getPoint("spawn").toPos()
 
@@ -102,6 +98,7 @@ class Elevator(
             } else {
                 player.setInstance(world, spawn)
             }.thenRun {
+                bar.addViewer(player)
                 player.sendMessage("You are in elevator of doom. it's not finished yet")
             }
         }
