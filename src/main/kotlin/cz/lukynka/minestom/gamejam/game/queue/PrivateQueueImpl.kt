@@ -23,10 +23,10 @@ class PrivateQueueImpl(override val owner: Player) : AbstractQueue(), PrivateQue
     }
 
     override fun dequeue(player: Player) {
+        super.dequeue(player)
+
         if (player == owner) {
             dispose()
-        } else {
-            super.dequeue(player)
         }
     }
 
