@@ -7,13 +7,13 @@ import net.minestom.server.entity.Player
 
 object HubCommand : Command("hub") {
     init {
-        setCondition { sender, _ ->
-            sender is Player && sender.instance != hub
-        }
-
         setDefaultExecutor { sender, context ->
             if (sender is Player) {
-                sender.setInstance(hub, hubSpawnPoint)
+                if (sender.instance != hub) {
+                    sender.setInstance(hub, hubSpawnPoint)
+                } else {
+                    sender.teleport(hubSpawnPoint)
+                }
             }
         }
     }
