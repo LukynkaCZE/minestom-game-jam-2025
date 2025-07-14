@@ -1,8 +1,9 @@
 package cz.lukynka.minestom.gamejam.commands
 
+import cz.lukynka.minestom.gamejam.constants.StyleConstants
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.GOLD_ISH
 import cz.lukynka.minestom.gamejam.extensions.crash
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.TextColor
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.entity.Player
@@ -27,7 +28,7 @@ object CrashCommand : Command("crash") {
                             .append(
                                 Component.text(
                                     player.username,
-                                    TextColor.color(0xffbb00)
+                                    GOLD_ISH
                                 )
                             )
                             .append(Component.text("!"))

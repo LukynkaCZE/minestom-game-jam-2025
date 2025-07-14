@@ -2,6 +2,7 @@
 
 package cz.lukynka.minestom.gamejam.commands
 
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.GREY_69
 import cz.lukynka.minestom.gamejam.entity.Zombie
 import cz.lukynka.minestom.gamejam.extensions.round
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
@@ -130,7 +131,7 @@ object DebugCommand : Command("debug") {
                                 .append(
                                     Component.text(
                                         path.toString(),
-                                        TextColor.color(0x696969)
+                                        GREY_69
                                     )
                                 )
                                 .append(Component.text("!"))

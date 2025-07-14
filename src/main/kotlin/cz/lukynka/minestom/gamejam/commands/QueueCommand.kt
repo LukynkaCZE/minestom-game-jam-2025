@@ -1,5 +1,7 @@
 package cz.lukynka.minestom.gamejam.commands
 
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.RED_69
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.SCREAMING_GREY
 import cz.lukynka.minestom.gamejam.isAdmin
 import cz.lukynka.minestom.gamejam.player2QueueMap
 import cz.lukynka.minestom.gamejam.publicQueue
@@ -35,14 +37,14 @@ object QueueCommand : Command("queue") {
                 sender.sendMessage(
                     Component.text(
                         "Left queue",
-                        TextColor.color(0xaaaaaa)
+                        SCREAMING_GREY
                     )
                 )
             } else {
                 sender.sendMessage(
                     Component.text(
                         "Not in queue!",
-                        TextColor.color(0xff6969)
+                        RED_69
                     )
                 )
             }
