@@ -1,19 +1,19 @@
 package cz.lukynka.minestom.gamejam.commands
 
+import cz.lukynka.minestom.gamejam.hub
+import cz.lukynka.minestom.gamejam.hubSpawnPoint
 import net.minestom.server.command.builder.Command
-import net.minestom.server.coordinate.Point
 import net.minestom.server.entity.Player
-import net.minestom.server.instance.Instance
 
-class HubCommand(world: Instance, spawn: Point) : Command("hub") {
+object HubCommand : Command("hub") {
     init {
         setCondition { sender, _ ->
-            sender is Player && sender.instance != world
+            sender is Player && sender.instance != hub
         }
 
         setDefaultExecutor { sender, context ->
             if (sender is Player) {
-                sender.setInstance(world, spawn)
+                sender.setInstance(hub, hubSpawnPoint)
             }
         }
     }

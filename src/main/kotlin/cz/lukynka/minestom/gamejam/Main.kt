@@ -1,13 +1,7 @@
 package cz.lukynka.minestom.gamejam
 
-import cz.lukynka.minestom.gamejam.commands.CrashCommand
-import cz.lukynka.minestom.gamejam.commands.DebugCommand
-import cz.lukynka.minestom.gamejam.commands.GameModeCommand
-import cz.lukynka.minestom.gamejam.commands.GiveCommand
-import cz.lukynka.minestom.gamejam.commands.HubCommand
-import cz.lukynka.minestom.gamejam.commands.LobbyCommand
-import cz.lukynka.minestom.gamejam.commands.QueueCommand
 import cz.lukynka.minestom.gamejam.game.Elevator
+import cz.lukynka.minestom.gamejam.commands.*
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueue
 import cz.lukynka.minestom.gamejam.game.queue.PublicQueue
 import cz.lukynka.minestom.gamejam.game.queue.Queue
@@ -42,6 +36,7 @@ val publicQueue = PublicQueue()
 val privateQueues = Object2ObjectArrayMap<Player, PrivateQueue>()
 val player2QueueMap = Object2ObjectOpenHashMap<Player, Queue>()
 
+lateinit var hub: InstanceContainer
 val hubSpawnPoint = Pos(0.5, 42.0, 0.5)
 
 fun main() {
@@ -57,11 +52,9 @@ fun main() {
     commandManager.register(GameModeCommand)
     commandManager.register(CrashCommand)
     commandManager.register(GiveCommand)
+    commandManager.register(HubCommand)
 
-    val instanceManager = MinecraftServer.getInstanceManager()
-    val hub = instanceManager.createInstanceContainer()
-    commandManager.register(HubCommand(hub, hubSpawnPoint))
-
+    hub = MinecraftServer.getInstanceManager().createInstanceContainer()
     hub.setChunkSupplier(::LightingChunk)
     hub.setGenerator {
         it.modifier().fillHeight(0, 40, Block.STONE)
