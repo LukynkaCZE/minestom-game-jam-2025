@@ -18,6 +18,9 @@ class GameInstanceImpl(
         sendMessage("Hi!!! game started :3 (i lied)")
         sendMessage("Go to elevator of doom")
 
-        Elevator(world, Vec(0.0, 42.0, 0.0), players)
+        val elevator = Elevator(world, Vec(0.0, 42.0, 0.0), players)
+        elevator.readyFuture.thenRun {
+            elevator.start()
+        }
     }
 }

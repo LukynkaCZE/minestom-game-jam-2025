@@ -7,6 +7,7 @@ import cz.lukynka.minestom.gamejam.commands.GiveCommand
 import cz.lukynka.minestom.gamejam.commands.HubCommand
 import cz.lukynka.minestom.gamejam.commands.LobbyCommand
 import cz.lukynka.minestom.gamejam.commands.QueueCommand
+import cz.lukynka.minestom.gamejam.game.Elevator
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueue
 import cz.lukynka.minestom.gamejam.game.queue.PublicQueue
 import cz.lukynka.minestom.gamejam.game.queue.Queue

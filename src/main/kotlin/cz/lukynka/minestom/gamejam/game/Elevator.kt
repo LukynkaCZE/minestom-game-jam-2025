@@ -55,29 +55,10 @@ class Elevator(
     private val elevatorPoofPlace = elevatorSpawn.y + ELEVATORS_N * ELEVATOR_HEIGHT - 1.0 // off by one my beloved
 
     private val elevatorEntities = mutableListOf<Entity>()
+    val readyFuture = CompletableFuture<Void>()
 
     init {
-        world.loadChunks(map.origin, map.size).thenCompose {
-            map.placeSchematicAsync()
-        }.thenRun {
-            val futures = players.map { player ->
-                if (player.instance == world) {
-                    player.teleport(spawn)
-                } else {
-                    player.setInstance(world, spawn)
-                }.thenRun {
-                    player.sendMessage("You are in elevator of doom. it's not finished yet")
-                }
-            }
-
-            CompletableFuture.allOf(*futures.toTypedArray())
-                .thenRun {
-                    sendMessage("Every player is in elevator of doom.")
-                    // t*do
-                }
-        }
-
-        run {
+        val spawnJob = Thread.startVirtualThread {
             var y = elevatorSpawn.y
 
             while (y < elevatorPoofPlace) {
@@ -85,9 +66,36 @@ class Elevator(
                 y += ELEVATOR_HEIGHT
             }
         }
+
+        world.loadChunks(map.origin, map.size).thenCompose {
+            map.placeSchematicAsync()
+        }.thenRun {
+            spawnJob.join()
+
+            readyFuture.complete(null)
+        }
     }
     private val tickTask = MinecraftServer.getSchedulerManager()
         .scheduleTask(::tick, TaskSchedule.immediate(), TaskSchedule.tick(1))
+
+    fun start(): CompletableFuture<Void> {
+        val futures = players.map { player ->
+            if (player.instance == world) {
+                player.teleport(spawn)
+            } else {
+                player.setInstance(world, spawn)
+            }.thenRun {
+                player.sendMessage("You are in elevator of doom. it's not finished yet")
+            }
+        }
+
+        return CompletableFuture.allOf(*futures.toTypedArray())
+            .thenRun {
+                sendMessage("Every player is in elevator of doom.")
+                // t*do
+            }
+    }
+
 
     private fun tick() {
         elevatorEntities.forEach {
