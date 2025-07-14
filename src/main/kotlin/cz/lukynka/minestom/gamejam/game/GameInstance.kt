@@ -1,11 +1,15 @@
 package cz.lukynka.minestom.gamejam.game
 
 import cz.lukynka.minestom.gamejam.Disposable
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.YELLOW_69
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NOT_IN_ELEVATOR
+import cz.lukynka.minestom.gamejam.extensions.sendMessage
 import cz.lukynka.minestom.gamejam.hub
 import cz.lukynka.minestom.gamejam.hubSpawnPoint
-import cz.lukynka.minestom.gamejam.player2QueueMap
 import cz.lukynka.minestom.gamejam.utils.PlayerListAudience
+import cz.lukynka.minestom.gamejam.utils.clickableCommand
 import cz.lukynka.minestom.gamejam.world2GameInstanceMap
+import net.kyori.adventure.text.Component
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Vec
 import net.minestom.server.entity.Player
@@ -27,14 +31,34 @@ class GameInstance(
     }
 
     val elevator = Elevator(world, Vec(0.0, 42.0, 0.0), players)
+    var state = State.INITIALIZING
 
     fun start(): CompletableFuture<Void> {
+        check(state == State.INITIALIZING) { "state must be initializing to start game" }
+
         return elevator.readyFuture.thenCompose {
             elevator.start()
+        }.thenRun {
+            state = State.IN_ELEVATOR
+        }
+    }
+
+    fun playerReadyToggle(player: Player) {
+        if (state == State.IN_ELEVATOR) {
+            elevator.playerReadyToggle(player)
+
+            if (elevator.playersReady.size == players.size) {
+                sendMessage("all players are ready but shi is unfinished")
+                dispose()
+            }
+        } else {
+            player.sendMessage(NOT_IN_ELEVATOR)
         }
     }
 
     override fun dispose() {
+        state = State.DISPOSED
+
         elevator.dispose()
         players.forEach {
             it.setInstance(hub, hubSpawnPoint)
@@ -42,5 +66,11 @@ class GameInstance(
 
         world2GameInstanceMap.remove(world)
         MinecraftServer.getInstanceManager().unregisterInstance(world)
+    }
+
+    enum class State {
+        DISPOSED,
+        INITIALIZING,
+        IN_ELEVATOR;
     }
 }

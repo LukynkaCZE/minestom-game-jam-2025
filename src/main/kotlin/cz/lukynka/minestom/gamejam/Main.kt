@@ -56,6 +56,7 @@ fun main() {
     commandManager.register(CrashCommand)
     commandManager.register(GiveCommand)
     commandManager.register(HubCommand)
+    commandManager.register(ReadyCommand)
 
     hub = MinecraftServer.getInstanceManager().createInstanceContainer()
     hub.timeRate = 0

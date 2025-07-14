@@ -3,6 +3,12 @@
 package cz.lukynka.minestom.gamejam.game
 
 import cz.lukynka.minestom.gamejam.Disposable
+import cz.lukynka.minestom.gamejam.apis.Bossbar
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.YELLOW_69
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.IS_NOT_READY
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.IS_READY
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NOT_READY_CMD_MSG
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.READY_CMD_MSG
 import cz.lukynka.minestom.gamejam.extensions.sendMessage
 import cz.lukynka.minestom.gamejam.extensions.toPos
 import cz.lukynka.minestom.gamejam.utils.PlayerListAudience
@@ -10,6 +16,9 @@ import cz.lukynka.minestom.gamejam.utils.loadChunks
 import cz.lukynka.minestom.gamejam.utils.shulkerMap
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
 import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
+import net.kyori.adventure.bossbar.BossBar
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.Component.textOfChildren
 import net.minestom.server.MinecraftServer
 import net.minestom.server.component.DataComponentMap
 import net.minestom.server.component.DataComponents
@@ -21,8 +30,8 @@ import net.minestom.server.instance.Instance
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 import net.minestom.server.item.component.CustomModelData
-import net.minestom.server.timer.Task
 import net.minestom.server.timer.TaskSchedule
+import java.util.*
 import java.util.concurrent.CompletableFuture
 
 class Elevator(
@@ -37,8 +46,7 @@ class Elevator(
         const val ELEVATORS_N = 4
         const val ELEVATOR_SPAWN_OFFSET = -ELEVATOR_HEIGHT
 
-        val speedPerSecond = Vec(0.0, 7.0, 0.0)
-        val speedPerTick = speedPerSecond.div(20.0)
+        val speedPerTick = Vec(0.0, 7.0 / 20.0, 0.0)
 
         // cache to prevent allocations
         val elevatorItem = ItemStack.of(
@@ -48,6 +56,13 @@ class Elevator(
                 .build()
         )
         val elevatorScale = Vec(32.0)
+    }
+
+    val playersReady = mutableSetOf<Player>()
+    private val bar = Bossbar(bossBarTitle(), 0f, BossBar.Color.PURPLE, BossBar.Overlay.NOTCHED_6)
+
+    init {
+        players.forEach(bar::addViewer)
     }
 
     private val map = Companion.map.toMinestomMap(origin, world)
@@ -98,12 +113,39 @@ class Elevator(
             }
     }
 
+    fun playerReadyToggle(player: Player) {
+        if (playersReady.add(player)) {
+            // added
+            sendMessage(
+                textOfChildren(
+                    player.name.color(YELLOW_69),
+                    IS_READY
+                )
+            )
+            player.sendMessage(NOT_READY_CMD_MSG)
+        } else {
+            playersReady.remove(player)
+            sendMessage(
+                textOfChildren(
+                    player.name.color(YELLOW_69),
+                    IS_NOT_READY
+                )
+            )
+            player.sendMessage(READY_CMD_MSG)
+        }
+
+        bar.title.value = bossBarTitle()
+        bar.progress.value = playersReady.size.toFloat() / players.size
+    }
+
     override fun dispose() {
         tickTask.cancel()
         elevatorEntities.forEach {
             it.remove()
         }
         elevatorEntities.clear()
+        players.forEach(bar::removeViewer)
+
         readyFuture.completeExceptionally(RuntimeException("elevator is disposed"))
     }
 
@@ -128,4 +170,6 @@ class Elevator(
 
         elevatorEntities.add(entity)
     }
+
+    private fun bossBarTitle() = "Players ready: ${playersReady.size}/${players.size}"
 }
