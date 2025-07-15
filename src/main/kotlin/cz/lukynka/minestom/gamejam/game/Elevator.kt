@@ -4,6 +4,7 @@ package cz.lukynka.minestom.gamejam.game
 
 import cz.lukynka.minestom.gamejam.Disposable
 import cz.lukynka.minestom.gamejam.apis.Bossbar
+import cz.lukynka.minestom.gamejam.constants.ItemStackConstants.SHAFT
 import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.YELLOW_69
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.IS_NOT_READY
@@ -14,22 +15,15 @@ import cz.lukynka.minestom.gamejam.extensions.toPos
 import cz.lukynka.minestom.gamejam.utils.WorldAudience
 import cz.lukynka.minestom.gamejam.utils.loadChunks
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
-import cz.lukynka.shulkerbox.minestom.MinestomMap
 import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.text.Component.textOfChildren
 import net.minestom.server.MinecraftServer
-import net.minestom.server.component.DataComponentMap
-import net.minestom.server.component.DataComponents
 import net.minestom.server.coordinate.Point
 import net.minestom.server.coordinate.Vec
 import net.minestom.server.entity.Entity
 import net.minestom.server.entity.Player
-import net.minestom.server.entity.metadata.display.ItemDisplayMeta
 import net.minestom.server.instance.Instance
-import net.minestom.server.item.ItemStack
-import net.minestom.server.item.Material
-import net.minestom.server.item.component.CustomModelData
 import net.minestom.server.timer.TaskSchedule
 import java.util.concurrent.CompletableFuture
 
@@ -45,13 +39,6 @@ class Elevator(
 
         val speedPerTick = Vec(0.0, 7.0 / 20.0, 0.0)
 
-        // cache to prevent allocations
-        val elevatorItem = ItemStack.of(
-            Material.STICK,
-            DataComponentMap.builder()
-                .set(DataComponents.CUSTOM_MODEL_DATA, CustomModelData(listOf(9f), listOf(), listOf(), listOf()))
-                .build()
-        )
         val elevatorScale = Vec(32.0)
     }
 
@@ -167,7 +154,7 @@ class Elevator(
             world,
             point
         ) {
-            itemStack = elevatorItem
+            itemStack = SHAFT
             scale = elevatorScale
             transformationInterpolationDuration = 1
             posRotInterpolationDuration = 1
