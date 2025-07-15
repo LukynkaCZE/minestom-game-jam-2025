@@ -4,6 +4,7 @@ import cz.lukynka.minestom.gamejam.Disposable
 import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NOT_IN_ELEVATOR
 import cz.lukynka.minestom.gamejam.extensions.iterBlocks
+import cz.lukynka.minestom.gamejam.extensions.spawnEntity
 import cz.lukynka.minestom.gamejam.extensions.toPos
 import cz.lukynka.minestom.gamejam.hub
 import cz.lukynka.minestom.gamejam.hubSpawnPoint
@@ -12,10 +13,13 @@ import cz.lukynka.minestom.gamejam.utils.loadChunks
 import cz.lukynka.minestom.gamejam.utils.schedule
 import cz.lukynka.minestom.gamejam.world2GameInstanceMap
 import cz.lukynka.shulkerbox.minestom.MinestomMap
+import cz.lukynka.shulkerbox.minestom.MinestomProp
 import cz.lukynka.shulkerbox.minestom.MinestomShulkerboxMap
 import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
+import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Vec
+import net.minestom.server.entity.Entity
 import net.minestom.server.entity.Player
 import net.minestom.server.instance.Instance
 import net.minestom.server.instance.LightingChunk
@@ -44,6 +48,7 @@ class GameInstance(
     val elevator = Elevator(world, origin, players)
     var state = State.INITIALIZING
     private val maps = mutableListOf<MinestomMap>()
+    private val propEntities = ObjectArrayList<Entity>()
 
     fun start(): CompletableFuture<Void> {
         check(state == State.INITIALIZING) { "state must be initializing to start game" }
@@ -105,6 +110,10 @@ class GameInstance(
         return world.loadChunks(map.origin, map.origin.add(map.size)).thenCompose {
             map.placeSchematicAsync()
         }.thenApply {
+            map.props.stream()
+                .map(MinestomProp::spawnEntity)
+                .forEach(this.propEntities::add)
+
             map
         }
     }
@@ -116,6 +125,7 @@ class GameInstance(
         players.forEach {
             it.setInstance(hub, hubSpawnPoint)
         }
+        propEntities.forEach(Entity::remove)
 
         world2GameInstanceMap.remove(world)
         MinecraftServer.getInstanceManager().unregisterInstance(world)
