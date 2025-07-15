@@ -5,6 +5,7 @@ package cz.lukynka.minestom.gamejam.commands
 import cz.lukynka.minestom.gamejam.combat.ElementType
 import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.GREY_69
+import cz.lukynka.minestom.gamejam.entity.AbstractEnemy
 import cz.lukynka.minestom.gamejam.entity.Zombie
 import cz.lukynka.minestom.gamejam.extensions.round
 import cz.lukynka.minestom.gamejam.extensions.sendPacket
@@ -26,6 +27,7 @@ import net.minestom.server.coordinate.Vec
 import net.minestom.server.entity.Entity
 import net.minestom.server.entity.EntityType
 import net.minestom.server.entity.Player
+import net.minestom.server.entity.damage.DamageType
 import net.minestom.server.entity.metadata.projectile.FireworkRocketMeta
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
@@ -195,6 +197,18 @@ object DebugCommand : Command("debug") {
                     it.map.name == name
                 }?.let(game::spawnMap)
             }, ArgumentType.Literal("place"), mapArg)
+
+            addSyntax({ sender, context ->
+                if (sender !is Player) return@addSyntax
+
+                if (world2GameInstanceMap[sender.instance] == null) return@addSyntax
+
+                sender.instance.entities
+                    .filterIsInstance<AbstractEnemy>()
+                    .forEach { entity ->
+                        entity.damage(DamageType.GENERIC, 99999f)
+                    }
+            }, ArgumentType.Literal("kill_enemies"))
         }
     }
 }
