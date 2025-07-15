@@ -76,7 +76,7 @@ data class Location(
     }
 
     fun toMinestom(): Pos {
-        return Pos(this.x, this.y, this.z)
+        return Pos(this.x, this.y, this.z, this.yaw, this.pitch)
     }
 
     fun add(vector: Vector3f): Location = Location(this.x + vector.x, this.y + vector.y, this.z + vector.z, this.yaw, this.pitch, this.world)

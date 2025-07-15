@@ -1,6 +1,7 @@
 package cz.lukynka.minestom.gamejam.vectors
 
 import cz.lukynka.minestom.gamejam.types.Location
+import net.minestom.server.coordinate.Vec
 import net.minestom.server.instance.Instance
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -96,4 +97,5 @@ data class Vector3d(var x: Double, var y: Double, var z: Double) {
     fun toLocation(world: Instance): Location = Location(this.x, this.y, this.z, world)
     fun toVector3f() = Vector3f(x.toFloat(), y.toFloat(), z.toFloat())
     fun toVector3() = Vector3(x.toInt(), y.toInt(), z.toInt())
+    fun toMinestomVec() = Vec(this.x, this.y, this.z)
 }

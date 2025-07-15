@@ -1,5 +1,8 @@
 package cz.lukynka.minestom.gamejam
 
+import cz.lukynka.minestom.gamejam.combat.CombatManager
+import cz.lukynka.minestom.gamejam.combat.DoubleJump
+import cz.lukynka.minestom.gamejam.combat.TeamManager
 import cz.lukynka.minestom.gamejam.commands.*
 import cz.lukynka.minestom.gamejam.game.GameInstance
 import cz.lukynka.minestom.gamejam.game.queue.PrivateQueue
@@ -12,15 +15,16 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
-import net.minestom.server.entity.LivingEntity
 import net.minestom.server.entity.Player
-import net.minestom.server.entity.damage.DamageType
-import net.minestom.server.event.entity.EntityAttackEvent
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
+import net.minestom.server.event.player.PlayerSpawnEvent
+import net.minestom.server.extras.MojangAuth
 import net.minestom.server.instance.Instance
 import net.minestom.server.instance.InstanceContainer
 import net.minestom.server.instance.LightingChunk
 import net.minestom.server.instance.block.Block
+import net.minestom.server.item.ItemStack
+import net.minestom.server.item.Material
 import net.minestom.server.network.ConnectionState
 import net.minestom.server.network.packet.client.play.ClientChangeGameModePacket
 import net.minestom.server.timer.TaskSchedule
@@ -47,6 +51,7 @@ fun main() {
     GitIntegration.load()
 
     val server = MinecraftServer.init()
+    MojangAuth.init()
 
     val commandManager = MinecraftServer.getCommandManager()
     commandManager.register(QueueCommand)
@@ -55,6 +60,7 @@ fun main() {
     commandManager.register(GameModeCommand)
     commandManager.register(CrashCommand)
     commandManager.register(GiveCommand)
+    commandManager.register(HealCommand)
     commandManager.register(HubCommand)
     commandManager.register(ReadyCommand)
 
@@ -65,6 +71,10 @@ fun main() {
         it.modifier().fillHeight(0, 40, Block.STONE)
     }
 
+    TeamManager.registerTeams()
+    CombatManager.init()
+    DoubleJump.init()
+
     val globalEventHandler = MinecraftServer.getGlobalEventHandler()
 
     globalEventHandler.addListener(AsyncPlayerConfigurationEvent::class.java) { event ->
@@ -74,17 +84,16 @@ fun main() {
         player.respawnPoint = hubSpawnPoint
         player.gameMode = GameMode.ADVENTURE
 
+        player.inventory.addItemStack(ItemStack.of(Material.IRON_SWORD))
+
         if (player.isAdmin()) {
             player.permissionLevel = 4
         }
     }
 
-    globalEventHandler.addListener(EntityAttackEvent::class.java) { event ->
-        val target = event.target
-
-        if (target is LivingEntity) {
-            target.damage(DamageType.MOB_ATTACK, 1f)
-        }
+    globalEventHandler.addListener(PlayerSpawnEvent::class.java) { event ->
+        val player = event.player
+        player.isAllowFlying = true
     }
 
     val packetManager = MinecraftServer.getPacketListenerManager()
