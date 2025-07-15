@@ -17,7 +17,6 @@ import cz.lukynka.minestom.gamejam.utils.shulkerMap
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
 import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
 import net.kyori.adventure.bossbar.BossBar
-import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.textOfChildren
 import net.minestom.server.MinecraftServer
 import net.minestom.server.component.DataComponentMap
@@ -32,7 +31,6 @@ import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 import net.minestom.server.item.component.CustomModelData
 import net.minestom.server.timer.TaskSchedule
-import java.util.*
 import java.util.concurrent.CompletableFuture
 
 class Elevator(
@@ -148,12 +146,18 @@ class Elevator(
     }
 
     private fun tick() {
-        elevatorEntities.forEach {
+        val removed = elevatorEntities.removeIf {
             if (it.position.y >= elevatorPoofPlace) {
-                it.teleport(elevatorSpawn)
+                it.remove()
+                true
             } else {
                 it.teleport(it.position.add(speedPerTick))
+                false
             }
+        }
+
+        if (removed) {
+            addElevator()
         }
     }
 
@@ -164,7 +168,6 @@ class Elevator(
         ) {
             itemStack = elevatorItem
             scale = elevatorScale
-
         }
         elevatorEntities.add(entity)
     }
