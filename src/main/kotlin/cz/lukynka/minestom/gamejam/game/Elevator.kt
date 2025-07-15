@@ -4,16 +4,15 @@ package cz.lukynka.minestom.gamejam.game
 
 import cz.lukynka.minestom.gamejam.Disposable
 import cz.lukynka.minestom.gamejam.apis.Bossbar
+import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.YELLOW_69
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.IS_NOT_READY
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.IS_READY
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NOT_READY_CMD_MSG
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.READY_CMD_MSG
-import cz.lukynka.minestom.gamejam.extensions.sendMessage
 import cz.lukynka.minestom.gamejam.extensions.toPos
-import cz.lukynka.minestom.gamejam.utils.PlayerListAudience
+import cz.lukynka.minestom.gamejam.utils.WorldAudience
 import cz.lukynka.minestom.gamejam.utils.loadChunks
-import cz.lukynka.minestom.gamejam.utils.shulkerMap
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
 import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
 import net.kyori.adventure.bossbar.BossBar
@@ -34,12 +33,10 @@ import net.minestom.server.timer.TaskSchedule
 import java.util.concurrent.CompletableFuture
 
 class Elevator(
-    private val world: Instance,
-    origin: Point,
-    override val players: List<Player>
-) : PlayerListAudience, Disposable {
+    override val world: Instance,
+    origin: Point
+) : WorldAudience, Disposable {
     companion object {
-        val map = shulkerMap("elevator")
         const val ELEVATOR_HEIGHT = 14.0
         const val ELEVATOR_WIDTH = 15.0 + 2.0 // 15 is actual elevator width. off by two somehow
         const val ELEVATORS_N = 4
@@ -60,8 +57,8 @@ class Elevator(
     val playersReady = mutableSetOf<Player>()
     private val bar = Bossbar(bossBarTitle(), 0f, BossBar.Color.PURPLE, BossBar.Overlay.NOTCHED_6)
 
-    private val map = Companion.map.toMinestomMap(origin, world)
-    private val spawn = map.getPoint("spawn").toPos()
+    private val map = ShulkerBoxMaps.elevator.toMinestomMap(origin, world)
+    val spawn = map.getPoint("spawn").toPos()
 
     private val elevatorSpawn = spawn.withView(0f, 0f).add(-ELEVATOR_WIDTH/2, ELEVATOR_SPAWN_OFFSET, -ELEVATOR_WIDTH/2)
     private val elevatorPoofPlace = elevatorSpawn.y + ELEVATORS_N * ELEVATOR_HEIGHT - 1.0 // off by one my beloved
@@ -79,7 +76,7 @@ class Elevator(
             }
         }
 
-        world.loadChunks(map.origin, map.size).thenCompose {
+        world.loadChunks(map.origin, map.origin.add(map.size)).thenCompose {
             map.placeSchematicAsync()
         }.thenRun {
             spawnJob.join()
@@ -90,7 +87,7 @@ class Elevator(
     private val tickTask = MinecraftServer.getSchedulerManager()
         .scheduleTask(::tick, TaskSchedule.future(readyFuture), TaskSchedule.tick(1))
 
-    fun start(): CompletableFuture<Void> {
+    fun start(players: Collection<Player>): CompletableFuture<Void> {
         val futures = players.map { player ->
             if (player.instance == world) {
                 player.teleport(spawn)
@@ -98,15 +95,10 @@ class Elevator(
                 player.setInstance(world, spawn)
             }.thenRun {
                 bar.addViewer(player)
-                player.sendMessage("You are in elevator of doom. it's not finished yet")
             }
         }
 
         return CompletableFuture.allOf(*futures.toTypedArray())
-            .thenRun {
-                sendMessage("Every player is in elevator of doom.")
-                // t*do
-            }
     }
 
     fun playerReadyToggle(player: Player) {
@@ -130,8 +122,16 @@ class Elevator(
             player.sendMessage(READY_CMD_MSG)
         }
 
+        updateBossBar()
+    }
+
+    fun playerLeft(player: Player) {
+        bar.removeViewer(player)
+    }
+
+    fun updateBossBar() {
         bar.title.value = bossBarTitle()
-        bar.progress.value = playersReady.size.toFloat() / players.size
+        bar.progress.value = playersReady.size.toFloat() / world.players.size
     }
 
     override fun dispose() {
@@ -140,7 +140,7 @@ class Elevator(
             it.remove()
         }
         elevatorEntities.clear()
-        players.forEach(bar::removeViewer)
+        bar.viewers.forEach(bar::removeViewer)
 
         readyFuture.completeExceptionally(RuntimeException("elevator is disposed"))
     }
@@ -172,5 +172,5 @@ class Elevator(
         elevatorEntities.add(entity)
     }
 
-    private fun bossBarTitle() = "Players ready: ${playersReady.size}/${players.size}"
+    private fun bossBarTitle() = "Players ready: ${playersReady.size}/${world.players.size}"
 }

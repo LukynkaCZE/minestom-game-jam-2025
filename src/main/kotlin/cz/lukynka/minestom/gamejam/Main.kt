@@ -16,6 +16,7 @@ import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
 import net.minestom.server.entity.Player
+import net.minestom.server.event.instance.RemoveEntityFromInstanceEvent
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
 import net.minestom.server.event.player.PlayerSpawnEvent
 import net.minestom.server.extras.MojangAuth
@@ -94,6 +95,16 @@ fun main() {
     globalEventHandler.addListener(PlayerSpawnEvent::class.java) { event ->
         val player = event.player
         player.isAllowFlying = true
+    }
+
+    globalEventHandler.addListener(RemoveEntityFromInstanceEvent::class.java) { event ->
+        val entity = event.entity
+
+        if (entity is Player) {
+            val game = world2GameInstanceMap[event.instance]
+
+            game?.playerLeft(entity)
+        }
     }
 
     val packetManager = MinecraftServer.getPacketListenerManager()

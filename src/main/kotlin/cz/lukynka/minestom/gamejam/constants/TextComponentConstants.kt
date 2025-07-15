@@ -1,5 +1,6 @@
 package cz.lukynka.minestom.gamejam.constants
 
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.GREY_69
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.RED_69
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.RED_E
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.YELLOW_69
@@ -7,7 +8,9 @@ import cz.lukynka.minestom.gamejam.utils.clickableCommand
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.Component.textOfChildren
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.format.TextDecoration.BOLD
+import net.kyori.adventure.text.format.TextDecoration.ITALIC
 import net.minestom.server.entity.Player
 
 object TextComponentConstants {
@@ -51,5 +54,16 @@ object TextComponentConstants {
             clickableCommand("/lobby accept ${player.username}"),
             LOBBY_ACCEPT_CMD_MSG_3
         )
+    }
+
+    private val PLAYER_LEFT_GAME_INSTANCE_1 = text("Player ", GREY_69)
+    private val PLAYER_LEFT_GAME_INSTANCE_2 = text(" left the game.", GREY_69)
+
+    fun playerLeftGameInstance(player: Player): Component {
+        return textOfChildren(
+            PLAYER_LEFT_GAME_INSTANCE_1,
+            player.name.color(YELLOW_69),
+            PLAYER_LEFT_GAME_INSTANCE_2
+        ).decorate(ITALIC)
     }
 }

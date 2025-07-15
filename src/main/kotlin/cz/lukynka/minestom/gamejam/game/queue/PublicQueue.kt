@@ -22,8 +22,7 @@ class PublicQueue : AbstractQueue() {
             // timer is over, force the game
             forceMakeTeam()
                 .onSuccess { players ->
-                    GameInstance(players)
-                        .start()
+                    GameInstance().start(players)
                 }
             timer = LOBBY_WAIT_TIME_TICKS
             bar.progress.value = 0f
@@ -32,8 +31,7 @@ class PublicQueue : AbstractQueue() {
             // try and make a full sized team
             makeTeam()
                 .onSuccess { players ->
-                    GameInstance(players)
-                        .start()
+                    GameInstance().start(players)
                     timer = LOBBY_WAIT_TIME_TICKS
                 }
             bar.progress.value = 1 - (timer.toFloat() / LOBBY_WAIT_TIME_TICKS)

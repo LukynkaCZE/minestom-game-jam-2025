@@ -1,6 +1,6 @@
 package cz.lukynka.minestom.gamejam.types
 
-import cz.lukynka.minestom.gamejam.Bound
+import cz.lukynka.minestom.gamejam.apis.Bound
 import cz.lukynka.minestom.gamejam.extensions.getBlock
 import cz.lukynka.minestom.gamejam.extensions.locationAt
 import cz.lukynka.minestom.gamejam.extensions.toNormalizedVector3f

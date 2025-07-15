@@ -117,8 +117,7 @@ object LobbyCommand : Command("lobby", "private_queue") {
 
             player2QueueMap[sender]?.dequeue(sender)
 
-            GameInstance(listOf(sender))
-                .start()
+            GameInstance().start(listOf(sender))
         }, ArgumentType.Literal("solo"))
 
         addSyntax({ sender, context ->
@@ -132,7 +131,7 @@ object LobbyCommand : Command("lobby", "private_queue") {
 
             queue.forceMakeTeam()
                 .onSuccess { players ->
-                    GameInstance(players).start()
+                    GameInstance().start(players)
                 }
                 .onFailure { err ->
                     sender.sendMessage(err.message.toString())
@@ -145,7 +144,7 @@ object LobbyCommand : Command("lobby", "private_queue") {
             Usage:
             /lobby create - create lobby
             /lobby invite <player> - invite player to lobby
-            /lobby accept <id> - accept invitation to lobby
+            /lobby accept <player> - accept invitation to lobby from player
             /lobby start - start the game
             /lobby leave - leave the lobby
             /lobby solo - start solo game instantly

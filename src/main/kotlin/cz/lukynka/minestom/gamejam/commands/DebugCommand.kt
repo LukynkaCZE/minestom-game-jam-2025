@@ -3,6 +3,7 @@
 package cz.lukynka.minestom.gamejam.commands
 
 import cz.lukynka.minestom.gamejam.combat.ElementType
+import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.GREY_69
 import cz.lukynka.minestom.gamejam.entity.Zombie
 import cz.lukynka.minestom.gamejam.extensions.round
@@ -174,6 +175,26 @@ object DebugCommand : Command("debug") {
                 val game = world2GameInstanceMap[sender.instance]
                 game?.dispose()
             }, ArgumentType.Literal("dispose"))
+
+            val mapArg = ArgumentType.String("map")
+            mapArg.setSuggestionCallback { sender, context, suggestion ->
+                ShulkerBoxMaps.maps.forEach {
+                    suggestion.addEntry(
+                        SuggestionEntry(it.map.name)
+                    )
+                }
+            }
+
+            addSyntax({ sender, context ->
+                if (sender !is Player) return@addSyntax
+
+                val game = world2GameInstanceMap[sender.instance] ?: return@addSyntax
+
+                val name = context.get(mapArg)
+                ShulkerBoxMaps.maps.find {
+                    it.map.name == name
+                }?.let(game::spawnMap)
+            }, ArgumentType.Literal("place"), mapArg)
         }
     }
 }
