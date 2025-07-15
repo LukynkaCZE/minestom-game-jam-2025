@@ -1,5 +1,6 @@
 package cz.lukynka.minestom.gamejam.combat
 
+import cz.lukynka.minestom.gamejam.Sounds
 import cz.lukynka.minestom.gamejam.entity.AbstractEnemy
 import cz.lukynka.minestom.gamejam.extensions.*
 import cz.lukynka.minestom.gamejam.minimessage.miniMessage
@@ -41,31 +42,40 @@ object CombatManager {
             event.isCancelled = true
 
             if (!inSlamMode.contains(player)) {
+                if (StaminaManager.getStamina(player) < 3) {
+                    player.sendMessage("<red>Not enough stamina for smash jump!".miniMessage)
+                    player.playSound(SoundEvent.BLOCK_NOTE_BLOCK_BASS, player.position, 0.3f, 1f)
+                    return@addListener
+                }
+
+                StaminaManager.removeStamina(player, 3)
                 player.velocity = Vec(0.0, 20.0, 0.0)
+                player.instance.playSound(Sounds.SMASH_JUMP_START, player.position, 1f, 1f)
                 runLater(1.ticks) {
                     inSlamMode.add(player)
                 }
             } else {
                 player.velocity = Vec(0.0, -100.0, 0.0)
+                player.instance.playSound(Sounds.SMASH_JUMP_MID_AIR, player.position, 1f, 1f)
             }
         }
 
         GLOBAL_EVENT_HANDLER.addListener(PlayerTickEndEvent::class.java) { event ->
             val player = event.player
+            StaminaManager.sendActionBar(player)
             if (inSlamMode.contains(event.player)) {
                 if (!player.isOnGround) return@addListener
                 player.instance.entities.filter { entity ->
                     entity != player &&
                             entity is AbstractEnemy &&
-                            entity.location.distance(player.location) <= 2
+                            entity.location.distance(player.location) <= 3
                 }.forEach { entity ->
                     (entity as AbstractEnemy).damage(DamageType.MACE_SMASH, 10f)
                 }
                 inSlamMode.remove(player)
 
                 player.instance.playSound(SoundEvent.ITEM_MACE_SMASH_GROUND_HEAVY, player.position, 0.5f, 1f)
-                player.instance.playSound(SoundEvent.ITEM_MACE_SMASH_GROUND_HEAVY, player.position, 0.5f, 0.5f)
-                player.instance.playSound(SoundEvent.ITEM_MACE_SMASH_GROUND_HEAVY, player.position, 0.5f, 1.5f)
+                player.instance.playSound(Sounds.SMASH_JUMP_LAND, player.position, 1f, 1f)
 
                 val below = player.location.subtract(0, 1, 0)
                 player.instance.spawnParticle(Particle.BLOCK.withBlock(below.block), below.add(0.0, 1.5, 0.0).toMinestom(), amount = 50, speed = 0.5f, offset = Vector3d(2.0, 0.2, 2.0))

@@ -2,6 +2,7 @@ package cz.lukynka.minestom.gamejam
 
 import cz.lukynka.minestom.gamejam.combat.CombatManager
 import cz.lukynka.minestom.gamejam.combat.DoubleJump
+import cz.lukynka.minestom.gamejam.combat.StaminaManager
 import cz.lukynka.minestom.gamejam.combat.TeamManager
 import cz.lukynka.minestom.gamejam.commands.*
 import cz.lukynka.minestom.gamejam.game.GameInstance
@@ -75,6 +76,7 @@ fun main() {
     TeamManager.registerTeams()
     CombatManager.init()
     DoubleJump.init()
+    StaminaManager.init()
 
     val globalEventHandler = MinecraftServer.getGlobalEventHandler()
 
