@@ -14,6 +14,7 @@ import cz.lukynka.minestom.gamejam.extensions.toPos
 import cz.lukynka.minestom.gamejam.utils.WorldAudience
 import cz.lukynka.minestom.gamejam.utils.loadChunks
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
+import cz.lukynka.shulkerbox.minestom.MinestomMap
 import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.text.Component.textOfChildren

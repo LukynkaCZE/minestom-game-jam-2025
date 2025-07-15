@@ -19,6 +19,7 @@ import cz.lukynka.shulkerbox.minestom.MinestomShulkerboxMap
 import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import net.minestom.server.MinecraftServer
+import net.minestom.server.coordinate.Point
 import net.minestom.server.coordinate.Vec
 import net.minestom.server.entity.Entity
 import net.minestom.server.entity.Player
@@ -118,9 +119,15 @@ class GameInstance : WorldAudience, Disposable {
     }
 
     fun spawnMap(map: MinestomShulkerboxMap): CompletableFuture<MinestomMap> {
-        val spawn = maps.lastOrNull()
+        val spawn: Point = maps.lastOrNull()
             ?.let { lastMap ->
-                lastMap.origin.add(lastMap.size.x, 0.0, 0.0)
+                val origin = lastMap.origin.add(lastMap.size.x, 0.0, 0.0)
+
+                if (lastMap.name == "map_first") {
+                    origin.add(ShulkerBoxMaps.FIRST_MAP_OFFSET)
+                } else {
+                    origin
+                }
             } ?: origin
 
         val map = map.toMinestomMap(spawn, world)
