@@ -5,10 +5,9 @@ import cz.lukynka.bindables.BindablePool
 import cz.lukynka.minestom.gamejam.combat.ElementType
 import cz.lukynka.minestom.gamejam.combat.TeamManager
 import cz.lukynka.minestom.gamejam.extensions.random
-import cz.lukynka.minestom.gamejam.extensions.sendMessage
 import cz.lukynka.minestom.gamejam.minimessage.miniMessage
+import cz.lukynka.minestom.gamejam.utils.ActuallyGoodNodeFollower
 import net.kyori.adventure.sound.Sound
-import net.kyori.adventure.text.format.NamedTextColor
 import net.minestom.server.component.DataComponents
 import net.minestom.server.entity.EntityCreature
 import net.minestom.server.entity.EntityType
@@ -23,6 +22,7 @@ abstract class AbstractEnemy(entityType: EntityType, elementType: ElementType?, 
     val bindablePool = BindablePool()
     val elementType: Bindable<ElementType?> = bindablePool.provideBindable(elementType)
     val team: Bindable<Team?> = bindablePool.provideBindable(null)
+    var canPathfind: Boolean = true
 
     abstract val sounds: Sounds
     abstract val damage: Float
@@ -64,10 +64,11 @@ abstract class AbstractEnemy(entityType: EntityType, elementType: ElementType?, 
             }
         }
 
-        this.getAttribute(Attribute.MOVEMENT_SPEED).baseValue = 0.23
+        this.getAttribute(Attribute.MOVEMENT_SPEED).baseValue = 0.16
 
         team.triggerUpdate()
         this.elementType.triggerUpdate()
         this.isGlowing = true
+        this.navigator.setNodeFollower { ActuallyGoodNodeFollower(this) }
     }
 }

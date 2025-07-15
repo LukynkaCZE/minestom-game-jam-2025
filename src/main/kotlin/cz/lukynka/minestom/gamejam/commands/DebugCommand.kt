@@ -104,6 +104,7 @@ object DebugCommand : Command("debug") {
             firework.setInstance(player.instance).thenAccept {
                 firework.teleport(player.position)
             }
+
         }, ArgumentType.Literal("firework"))
 
         addSubcommand(Shulkerbox)

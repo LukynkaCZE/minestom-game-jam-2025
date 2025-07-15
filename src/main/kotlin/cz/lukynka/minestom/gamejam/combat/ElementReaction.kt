@@ -10,6 +10,7 @@ enum class ElementReaction(val first: ElementType, val second: ElementType, val 
 }
 
 fun getElementReaction(first: ElementType, second: ElementType): ElementReaction? {
+    if (first == second) return null
     return ElementReaction.entries.firstOrNull {
         (it.first == first && it.second == second) || (it.first == second && it.second == first)
     }
