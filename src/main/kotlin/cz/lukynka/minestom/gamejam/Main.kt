@@ -16,6 +16,7 @@ import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
 import net.minestom.server.entity.Player
+import net.minestom.server.event.entity.EntityDeathEvent
 import net.minestom.server.event.instance.RemoveEntityFromInstanceEvent
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
 import net.minestom.server.event.player.PlayerSpawnEvent
@@ -105,6 +106,11 @@ fun main() {
 
             game?.playerLeft(entity)
         }
+    }
+
+    globalEventHandler.addListener(EntityDeathEvent::class.java) { event ->
+        val game = world2GameInstanceMap[event.instance]
+        game?.onEntityDeath(event.entity)
     }
 
     val packetManager = MinecraftServer.getPacketListenerManager()

@@ -141,7 +141,7 @@ class Elevator(
             it.remove()
         }
         elevatorEntities.clear()
-        bar.viewers.forEach(bar::removeViewer)
+        bar.clearViewers()
 
         readyFuture.completeExceptionally(RuntimeException("elevator is disposed"))
     }

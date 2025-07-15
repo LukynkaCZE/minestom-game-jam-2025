@@ -1,12 +1,18 @@
 package cz.lukynka.minestom.gamejam.game
 
 import cz.lukynka.minestom.gamejam.Disposable
+import cz.lukynka.minestom.gamejam.apis.Bossbar
+import cz.lukynka.minestom.gamejam.combat.ElementType
 import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NOT_IN_ELEVATOR
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.playerLeftGameInstance
+import cz.lukynka.minestom.gamejam.entity.AbstractEnemy
+import cz.lukynka.minestom.gamejam.entity.Zombie
 import cz.lukynka.minestom.gamejam.extensions.iterBlocks
 import cz.lukynka.minestom.gamejam.extensions.spawnEntity
 import cz.lukynka.minestom.gamejam.extensions.toPos
+import cz.lukynka.minestom.gamejam.game.delay.NormalWaveDelay
+import cz.lukynka.minestom.gamejam.game.delay.WaveDelay
 import cz.lukynka.minestom.gamejam.hub
 import cz.lukynka.minestom.gamejam.hubSpawnPoint
 import cz.lukynka.minestom.gamejam.utils.WorldAudience
@@ -18,6 +24,7 @@ import cz.lukynka.shulkerbox.minestom.MinestomProp
 import cz.lukynka.shulkerbox.minestom.MinestomShulkerboxMap
 import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
+import net.kyori.adventure.bossbar.BossBar
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Point
 import net.minestom.server.coordinate.Vec
@@ -26,10 +33,11 @@ import net.minestom.server.entity.Player
 import net.minestom.server.instance.Instance
 import net.minestom.server.instance.LightingChunk
 import net.minestom.server.instance.batch.AbsoluteBlockBatch
-import net.minestom.server.instance.batch.BatchOption
 import net.minestom.server.instance.block.Block
 import net.minestom.server.timer.TaskSchedule
 import java.util.concurrent.CompletableFuture
+import kotlin.random.Random
+import kotlin.time.Duration.Companion.seconds
 
 class GameInstance : WorldAudience, Disposable {
     companion object {
@@ -50,6 +58,12 @@ class GameInstance : WorldAudience, Disposable {
     var state = State.INITIALIZING
     private val maps = mutableListOf<MinestomMap>()
     private val propEntities = ObjectArrayList<Entity>()
+    private val enemies = ObjectArrayList<AbstractEnemy>()
+    private val tutorials = ObjectArrayList<WaveDelay>()
+    private val bar = Bossbar(bossBarTitle(), 0f, BossBar.Color.RED, BossBar.Overlay.PROGRESS)
+
+    private var wave = 1
+    private var totalEnemies = 0
 
     fun start(players: Collection<Player>): CompletableFuture<Void> {
         check(state == State.INITIALIZING) { "state must be initializing to start game" }
@@ -58,6 +72,44 @@ class GameInstance : WorldAudience, Disposable {
             elevator.start(players)
         }.thenRun {
             state = State.IN_ELEVATOR
+        }
+    }
+
+    fun nextWave() {
+        val delay = tutorials.removeFirstOrNull() ?: NormalWaveDelay(2.seconds, world.players)
+
+        delay.start().thenRun {
+            // in case its disposed we don't want to spawn entities anymore
+            if (state != State.GAME) {
+                return@thenRun
+            }
+
+            val spawns = maps.last().getPointsById("mob_spawn")
+                .toMutableList()
+            val nZombies = Random.nextInt(5, 9).coerceAtMost(spawns.size)
+            totalEnemies = nZombies
+
+            repeat(nZombies) {
+                val i = Random.nextInt(spawns.size)
+                val spawn = spawns.removeAt(i)
+
+                val zombie = Zombie(ElementType.entries.random())
+                zombie.setInstance(world, spawn.toPos())
+                enemies.add(zombie)
+            }
+            updateBossBar()
+        }
+    }
+
+    fun onEntityDeath(entity: Entity) {
+        if (entity is AbstractEnemy && enemies.remove(entity)) {
+            updateBossBar()
+            if (enemies.isEmpty) {
+                nextWave()
+            }
+        } else if (entity is Player) {
+            val pos = entity.position
+            entity.respawnPoint = pos
         }
     }
 
@@ -80,6 +132,8 @@ class GameInstance : WorldAudience, Disposable {
                             elevator.dispose()
 
                             schedule(TaskSchedule.seconds(2)) {
+                                world.players.forEach(bar::addViewer)
+
                                 // break the gate
                                 val bound = map.getBound("gate")
 
@@ -89,7 +143,7 @@ class GameInstance : WorldAudience, Disposable {
                                     batch.setBlock(point, Block.AIR)
                                 }
 
-                                batch.apply(world, null)
+                                batch.apply(world, ::nextWave)
                             }
                         }
                 }
@@ -162,6 +216,13 @@ class GameInstance : WorldAudience, Disposable {
         }
     }
 
+    fun bossBarTitle() = "Wave $wave/4: ${enemies.size} enemies left"
+
+    fun updateBossBar() {
+        bar.title.value = bossBarTitle()
+        bar.progress.value = 1 - (enemies.size.toFloat() / totalEnemies)
+    }
+
     override fun dispose() {
         state = State.DISPOSED
 
@@ -170,6 +231,12 @@ class GameInstance : WorldAudience, Disposable {
             it.setInstance(hub, hubSpawnPoint)
         }
         propEntities.forEach(Entity::remove)
+        propEntities.clear()
+
+        enemies.forEach(Entity::remove)
+        enemies.clear()
+
+        bar.clearViewers()
 
         world2GameInstanceMap.remove(world)
         MinecraftServer.getInstanceManager().unregisterInstance(world)
