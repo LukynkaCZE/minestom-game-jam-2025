@@ -10,7 +10,7 @@ import net.kyori.adventure.text.Component
 import net.minestom.server.entity.Player
 
 interface PlayerListAudience : Audience {
-    val players: List<Player>
+    val players: Collection<Player>
 
     override fun sendMessage(source: Identity, message: Component, type: MessageType) {
         players.forEach {
