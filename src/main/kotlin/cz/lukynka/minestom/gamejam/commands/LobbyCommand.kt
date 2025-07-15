@@ -145,7 +145,7 @@ object LobbyCommand : Command("lobby", "private_queue") {
             Usage:
             /lobby create - create lobby
             /lobby invite <player> - invite player to lobby
-            /lobby accept <id> - accept invitation to lobby
+            /lobby accept <player> - accept invitation to lobby from player
             /lobby start - start the game
             /lobby leave - leave the lobby
             /lobby solo - start solo game instantly
