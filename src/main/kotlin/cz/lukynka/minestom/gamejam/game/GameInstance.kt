@@ -26,6 +26,7 @@ import net.minestom.server.entity.Player
 import net.minestom.server.instance.Instance
 import net.minestom.server.instance.LightingChunk
 import net.minestom.server.instance.batch.AbsoluteBlockBatch
+import net.minestom.server.instance.batch.BatchOption
 import net.minestom.server.instance.block.Block
 import net.minestom.server.timer.TaskSchedule
 import java.util.concurrent.CompletableFuture
@@ -119,22 +120,39 @@ class GameInstance : WorldAudience, Disposable {
     }
 
     fun spawnMap(map: MinestomShulkerboxMap): CompletableFuture<MinestomMap> {
-        val spawn: Point = maps.lastOrNull()
-            ?.let { lastMap ->
-                val origin = lastMap.origin.add(lastMap.size.x, 0.0, 0.0)
+        val lastMap = maps.lastOrNull()
 
-                if (lastMap.name == "map_first") {
-                    origin.add(ShulkerBoxMaps.FIRST_MAP_OFFSET)
-                } else {
-                    origin
+        val doorBreakFuture: CompletableFuture<Void> = lastMap?.bounds?.firstOrNull { it.id == "next_level_door" }
+            ?.let { doorBound ->
+                val batch = AbsoluteBlockBatch()
+
+                doorBound.iterBlocks { point ->
+                    batch.setBlock(point, Block.AIR)
                 }
-            } ?: origin
+                val future = CompletableFuture<Void>()
+                batch.apply(world) { future.complete(null) }
+                future
+            } ?: CompletableFuture.completedFuture(null)
+
+        val spawn: Point = if (lastMap != null) {
+            val origin = lastMap.origin.add(lastMap.size.x, 0.0, 0.0)
+
+            if (lastMap.name == "map_first") {
+                origin.add(ShulkerBoxMaps.FIRST_MAP_OFFSET)
+            } else {
+                origin
+            }
+        } else {
+            origin
+        }
 
         val map = map.toMinestomMap(spawn, world)
         maps.add(map)
 
         return world.loadChunks(map.origin, map.origin.add(map.size)).thenCompose {
             map.placeSchematicAsync()
+        }.thenCompose {
+            doorBreakFuture
         }.thenApply {
             map.props.stream()
                 .map(MinestomProp::spawnEntity)
