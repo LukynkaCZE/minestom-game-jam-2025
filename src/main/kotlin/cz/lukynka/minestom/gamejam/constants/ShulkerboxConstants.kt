@@ -23,3 +23,16 @@ object ShulkerBoxMaps {
             MapFileReader.read(path.toFile())
         }
 }
+
+object ShulkerboxPointConstants {
+    const val SPAWN = "spawn"
+    const val BLAST_DOOR = "blast_door"
+    const val MOB_SPAWN = "mob_spawn"
+    const val NEXT_LEVEL_PICKER = "next_level_picker"
+
+}
+
+object ShulkerboxBounds {
+    const val NEXT_LEVEL_DOOR = "next_level_door"
+    const val GATE = "gate"
+}

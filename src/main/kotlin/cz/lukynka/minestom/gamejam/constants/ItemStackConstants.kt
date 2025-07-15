@@ -15,4 +15,8 @@ object ItemStackConstants {
             .set(DataComponents.CUSTOM_MODEL_DATA, CustomModelData(listOf(9f), listOf(), listOf(), listOf()))
             .build()
     )
+
+    val ELEVATOR_SCALE = Vec(32.0)
+    const val ELEVATOR_HEIGHT = 14.0
+    const val ELEVATOR_WIDTH = 17.0
 }

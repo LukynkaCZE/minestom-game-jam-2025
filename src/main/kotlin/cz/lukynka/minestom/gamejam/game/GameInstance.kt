@@ -4,6 +4,12 @@ import cz.lukynka.minestom.gamejam.Disposable
 import cz.lukynka.minestom.gamejam.apis.Bossbar
 import cz.lukynka.minestom.gamejam.combat.ElementType
 import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
+import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds
+import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.GATE
+import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.NEXT_LEVEL_DOOR
+import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants
+import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.MOB_SPAWN
+import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.SPAWN
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NOT_IN_ELEVATOR
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.playerLeftGameInstance
 import cz.lukynka.minestom.gamejam.entity.AbstractEnemy
@@ -92,7 +98,7 @@ class GameInstance : WorldAudience, Disposable {
                 return@thenRun
             }
 
-            val spawns = maps.last().getPointsById("mob_spawn")
+            val spawns = maps.last().getPointsById(MOB_SPAWN)
                 .toMutableList()
             val nZombies = Random.nextInt(5, 9).coerceAtMost(spawns.size)
             totalEnemies = nZombies
@@ -129,7 +135,7 @@ class GameInstance : WorldAudience, Disposable {
                 state = State.GAME
 
                 spawnMap(ShulkerBoxMaps.first).thenAccept { map ->
-                    val spawn = map.getPoint("spawn").toPos()
+                    val spawn = map.getPoint(SPAWN).toPos()
 
                     val futures = world.players.map {
                         it.teleport(spawn)
@@ -143,7 +149,7 @@ class GameInstance : WorldAudience, Disposable {
                                 world.players.forEach(bar::addViewer)
 
                                 // break the gate
-                                val bound = map.getBound("gate")
+                                val bound = map.getBound(GATE)
 
                                 val batch = AbsoluteBlockBatch()
 
@@ -202,7 +208,7 @@ class GameInstance : WorldAudience, Disposable {
         return world.loadChunks(map.origin, map.origin.add(map.size)).thenCompose {
             map.placeSchematicAsync()
         }.thenCompose {
-            lastMap?.bounds?.firstOrNull { it.id == "next_level_door" }
+            lastMap?.bounds?.firstOrNull { it.id == NEXT_LEVEL_DOOR }
                 ?.let { doorBound ->
                     val batch = AbsoluteBlockBatch()
 
