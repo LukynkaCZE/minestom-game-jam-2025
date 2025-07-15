@@ -168,6 +168,9 @@ class Elevator(
         ) {
             itemStack = elevatorItem
             scale = elevatorScale
+            transformationInterpolationDuration = 1
+            posRotInterpolationDuration = 1
+            transformationInterpolationStartDelta = -1
         }
         elevatorEntities.add(entity)
     }
