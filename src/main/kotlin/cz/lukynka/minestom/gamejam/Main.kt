@@ -16,6 +16,7 @@ import net.minestom.server.entity.LivingEntity
 import net.minestom.server.entity.Player
 import net.minestom.server.entity.damage.DamageType
 import net.minestom.server.event.entity.EntityAttackEvent
+import net.minestom.server.event.instance.RemoveEntityFromInstanceEvent
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
 import net.minestom.server.instance.Instance
 import net.minestom.server.instance.InstanceContainer
@@ -84,6 +85,16 @@ fun main() {
 
         if (target is LivingEntity) {
             target.damage(DamageType.MOB_ATTACK, 1f)
+        }
+    }
+
+    globalEventHandler.addListener(RemoveEntityFromInstanceEvent::class.java) { event ->
+        val entity = event.entity
+
+        if (entity is Player) {
+            val game = world2GameInstanceMap[event.instance]
+
+            game?.playerLeft(entity)
         }
     }
 

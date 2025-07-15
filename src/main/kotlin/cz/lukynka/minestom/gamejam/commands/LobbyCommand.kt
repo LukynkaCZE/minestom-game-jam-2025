@@ -117,8 +117,7 @@ object LobbyCommand : Command("lobby", "private_queue") {
 
             player2QueueMap[sender]?.dequeue(sender)
 
-            GameInstance(listOf(sender))
-                .start()
+            GameInstance().start(listOf(sender))
         }, ArgumentType.Literal("solo"))
 
         addSyntax({ sender, context ->
@@ -132,7 +131,7 @@ object LobbyCommand : Command("lobby", "private_queue") {
 
             queue.forceMakeTeam()
                 .onSuccess { players ->
-                    GameInstance(players).start()
+                    GameInstance().start(players)
                 }
                 .onFailure { err ->
                     sender.sendMessage(err.message.toString())
