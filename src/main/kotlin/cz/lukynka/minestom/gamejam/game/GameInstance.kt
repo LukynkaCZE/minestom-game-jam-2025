@@ -176,18 +176,6 @@ class GameInstance : WorldAudience, Disposable {
     fun spawnMap(map: MinestomShulkerboxMap): CompletableFuture<MinestomMap> {
         val lastMap = maps.lastOrNull()
 
-        val doorBreakFuture: CompletableFuture<Void> = lastMap?.bounds?.firstOrNull { it.id == "next_level_door" }
-            ?.let { doorBound ->
-                val batch = AbsoluteBlockBatch()
-
-                doorBound.iterBlocks { point ->
-                    batch.setBlock(point, Block.AIR)
-                }
-                val future = CompletableFuture<Void>()
-                batch.apply(world) { future.complete(null) }
-                future
-            } ?: CompletableFuture.completedFuture(null)
-
         val spawn: Point = if (lastMap != null) {
             val origin = lastMap.origin.add(lastMap.size.x, 0.0, 0.0)
 
@@ -206,7 +194,17 @@ class GameInstance : WorldAudience, Disposable {
         return world.loadChunks(map.origin, map.origin.add(map.size)).thenCompose {
             map.placeSchematicAsync()
         }.thenCompose {
-            doorBreakFuture
+            lastMap?.bounds?.firstOrNull { it.id == "next_level_door" }
+                ?.let { doorBound ->
+                    val batch = AbsoluteBlockBatch()
+
+                    doorBound.iterBlocks { point ->
+                        batch.setBlock(point, Block.AIR)
+                    }
+                    val future = CompletableFuture<Void>()
+                    batch.apply(world) { future.complete(null) }
+                    future
+                } ?: CompletableFuture.completedFuture(null)
         }.thenApply {
             map.props.stream()
                 .map(MinestomProp::spawnEntity)
