@@ -62,7 +62,7 @@ class GameInstance : WorldAudience, Disposable {
     private val tutorials = ObjectArrayList<WaveDelay>()
     private val bar = Bossbar(bossBarTitle(), 0f, BossBar.Color.RED, BossBar.Overlay.PROGRESS)
 
-    private var wave = 1
+    private var wave = 0
     private var totalEnemies = 0
 
     fun start(players: Collection<Player>): CompletableFuture<Void> {
@@ -78,7 +78,15 @@ class GameInstance : WorldAudience, Disposable {
     fun nextWave() {
         val delay = tutorials.removeFirstOrNull() ?: NormalWaveDelay(2.seconds, world.players)
 
-        delay.start().thenRun {
+        var future: CompletableFuture<*> = delay.start()
+        if (++wave >= 5) {
+            wave = 1
+            future = future.thenCompose {
+                spawnMap(ShulkerBoxMaps.maps.random())
+            }
+        }
+
+        future.thenRun {
             // in case its disposed we don't want to spawn entities anymore
             if (state != State.GAME) {
                 return@thenRun
