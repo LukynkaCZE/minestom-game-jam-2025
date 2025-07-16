@@ -4,7 +4,12 @@ package cz.lukynka.minestom.gamejam.game
 
 import cz.lukynka.minestom.gamejam.Disposable
 import cz.lukynka.minestom.gamejam.apis.Bossbar
+import cz.lukynka.minestom.gamejam.constants.ItemStackConstants.ELEVATOR_HEIGHT
+import cz.lukynka.minestom.gamejam.constants.ItemStackConstants.ELEVATOR_SCALE
+import cz.lukynka.minestom.gamejam.constants.ItemStackConstants.ELEVATOR_WIDTH
+import cz.lukynka.minestom.gamejam.constants.ItemStackConstants.SHAFT
 import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
+import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.SPAWN
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.YELLOW_69
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.IS_NOT_READY
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.IS_READY
@@ -18,17 +23,11 @@ import cz.lukynka.shulkerbox.minestom.conversion.toMinestomMap
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.text.Component.textOfChildren
 import net.minestom.server.MinecraftServer
-import net.minestom.server.component.DataComponentMap
-import net.minestom.server.component.DataComponents
 import net.minestom.server.coordinate.Point
 import net.minestom.server.coordinate.Vec
 import net.minestom.server.entity.Entity
 import net.minestom.server.entity.Player
-import net.minestom.server.entity.metadata.display.ItemDisplayMeta
 import net.minestom.server.instance.Instance
-import net.minestom.server.item.ItemStack
-import net.minestom.server.item.Material
-import net.minestom.server.item.component.CustomModelData
 import net.minestom.server.timer.TaskSchedule
 import java.util.concurrent.CompletableFuture
 
@@ -37,28 +36,17 @@ class Elevator(
     origin: Point
 ) : WorldAudience, Disposable {
     companion object {
-        const val ELEVATOR_HEIGHT = 14.0
-        const val ELEVATOR_WIDTH = 15.0 + 2.0 // 15 is actual elevator width. off by two somehow
         const val ELEVATORS_N = 4
         const val ELEVATOR_SPAWN_OFFSET = -ELEVATOR_HEIGHT
 
         val speedPerTick = Vec(0.0, 7.0 / 20.0, 0.0)
-
-        // cache to prevent allocations
-        val elevatorItem = ItemStack.of(
-            Material.STICK,
-            DataComponentMap.builder()
-                .set(DataComponents.CUSTOM_MODEL_DATA, CustomModelData(listOf(9f), listOf(), listOf(), listOf()))
-                .build()
-        )
-        val elevatorScale = Vec(32.0)
     }
 
     val playersReady = mutableSetOf<Player>()
     private val bar = Bossbar(bossBarTitle(), 0f, BossBar.Color.PURPLE, BossBar.Overlay.NOTCHED_6)
 
     private val map = ShulkerBoxMaps.elevator.toMinestomMap(origin, world)
-    val spawn = map.getPoint("spawn").toPos()
+    val spawn = map.getPoint(SPAWN).toPos()
 
     private val elevatorSpawn = spawn.withView(0f, 0f).add(-ELEVATOR_WIDTH/2, ELEVATOR_SPAWN_OFFSET, -ELEVATOR_WIDTH/2)
     private val elevatorPoofPlace = elevatorSpawn.y + ELEVATORS_N * ELEVATOR_HEIGHT - 1.0 // off by one my beloved
@@ -140,7 +128,7 @@ class Elevator(
             it.remove()
         }
         elevatorEntities.clear()
-        bar.viewers.forEach(bar::removeViewer)
+        bar.clearViewers()
 
         readyFuture.completeExceptionally(RuntimeException("elevator is disposed"))
     }
@@ -166,8 +154,8 @@ class Elevator(
             world,
             point
         ) {
-            itemStack = elevatorItem
-            scale = elevatorScale
+            itemStack = SHAFT
+            scale = ELEVATOR_SCALE
             transformationInterpolationDuration = 1
             posRotInterpolationDuration = 1
             transformationInterpolationStartDelta = -1
