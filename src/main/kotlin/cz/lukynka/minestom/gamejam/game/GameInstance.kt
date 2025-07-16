@@ -1,18 +1,16 @@
 package cz.lukynka.minestom.gamejam.game
 
-import cz.lukynka.minestom.gamejam.Disposable
+import cz.lukynka.minestom.gamejam.*
 import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NOT_IN_ELEVATOR
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.playerLeftGameInstance
 import cz.lukynka.minestom.gamejam.extensions.iterBlocks
+import cz.lukynka.minestom.gamejam.extensions.playSound
 import cz.lukynka.minestom.gamejam.extensions.spawnEntity
 import cz.lukynka.minestom.gamejam.extensions.toPos
-import cz.lukynka.minestom.gamejam.hub
-import cz.lukynka.minestom.gamejam.hubSpawnPoint
 import cz.lukynka.minestom.gamejam.utils.WorldAudience
 import cz.lukynka.minestom.gamejam.utils.loadChunks
 import cz.lukynka.minestom.gamejam.utils.schedule
-import cz.lukynka.minestom.gamejam.world2GameInstanceMap
 import cz.lukynka.shulkerbox.minestom.MinestomMap
 import cz.lukynka.shulkerbox.minestom.MinestomProp
 import cz.lukynka.shulkerbox.minestom.MinestomShulkerboxMap
@@ -76,6 +74,7 @@ class GameInstance : WorldAudience, Disposable {
                         .thenRun {
                             // when all players teleported, dispose elevator
                             elevator.dispose()
+                            this.playSound(Sounds.ELEVATOR_OPEN, 2f, 0.8f)
 
                             schedule(TaskSchedule.seconds(2)) {
                                 // break the gate
