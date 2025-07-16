@@ -11,4 +11,4 @@ object MiniMessageHelper {
     }
 }
 
-val String.miniMessage: Component get() = MiniMessageHelper.translate(this)
+val String.miniMessage: Component get() = MiniMessageHelper.translate(this.replace("<lime>", "<green>"))

@@ -11,8 +11,8 @@ import net.kyori.adventure.sound.Sound
 import net.minestom.server.component.DataComponents
 import net.minestom.server.entity.EntityCreature
 import net.minestom.server.entity.EntityType
+import net.minestom.server.entity.MetadataDef
 import net.minestom.server.entity.Player
-import net.minestom.server.entity.attribute.Attribute
 import net.minestom.server.network.packet.server.play.SoundEffectPacket
 import net.minestom.server.scoreboard.Team
 import net.minestom.server.sound.SoundEvent
@@ -26,6 +26,7 @@ abstract class AbstractEnemy(entityType: EntityType, elementType: ElementType?, 
 
     abstract val sounds: Sounds
     abstract val damage: Float
+    abstract val enemyHealth: Float
 
     data class Sounds(
         val damageSound: SoundRange,
@@ -57,14 +58,13 @@ abstract class AbstractEnemy(entityType: EntityType, elementType: ElementType?, 
         this.elementType.valueChanged { event ->
             if (event.newValue != null) {
                 this[DataComponents.CUSTOM_NAME] = "${event.newValue!!.color}$name".miniMessage
+                this.metadata.set(MetadataDef.CUSTOM_NAME_VISIBLE, true)
                 team.value = TeamManager.TEAMS[elementType]
             } else {
                 this[DataComponents.CUSTOM_NAME] = "<white>$name".miniMessage
                 team.value = null
             }
         }
-
-        this.getAttribute(Attribute.MOVEMENT_SPEED).baseValue = 0.16
 
         team.triggerUpdate()
         this.elementType.triggerUpdate()

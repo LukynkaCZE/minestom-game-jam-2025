@@ -14,8 +14,8 @@ object DoubleJump {
 
     private val GLOBAL_EVENT_HANDLER = MinecraftServer.getGlobalEventHandler()
     private val NEW_VELOCITY_BASE = Vector3d(0.0, 1.0, 0.0)
-    private val UP = Vector3d(0.0, 2.0, 0.0)
-    private const val VELOCITY_MULT = 12.0
+    private val UP = Vector3d(0.0, 3.0, 0.0)
+    private const val VELOCITY_MULT = 15.0
 
     fun init() {
         GLOBAL_EVENT_HANDLER.addListener(PlayerStartFlyingEvent::class.java) { event ->

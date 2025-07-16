@@ -18,7 +18,7 @@ object StaminaManager {
             removePlayer(player)
         }
 
-        schedule(TaskSchedule.immediate(), TaskSchedule.seconds(2)) {
+        schedule(TaskSchedule.immediate(), TaskSchedule.tick(10)) {
             stamina.keys.forEach { player ->
                 if (getStamina(player) < getMaxStamina(player)) {
                     stamina[player] = (getStamina(player) + 1).coerceIn(0, getMaxStamina(player))

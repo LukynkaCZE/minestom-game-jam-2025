@@ -13,7 +13,7 @@ import net.minestom.server.entity.attribute.Attribute
 import net.minestom.server.sound.SoundEvent
 import kotlin.time.toJavaDuration
 
-class Zombie(type: ElementType?) : AbstractEnemy(EntityType.ZOMBIE, type, "Corrupted Scientist") {
+class Runner(type: ElementType?) : AbstractEnemy(EntityType.PIGLIN, type, "Runner") {
 
     override val sounds: Sounds = Sounds(
         damageSound = SoundRange(SoundEvent.ENTITY_ZOMBIE_HURT, 0.8f..1.2f),
@@ -22,14 +22,14 @@ class Zombie(type: ElementType?) : AbstractEnemy(EntityType.ZOMBIE, type, "Corru
     )
 
     override val damage: Float = 1f
-    override val enemyHealth: Float = 10f
+    override val enemyHealth: Float = 20f
 
     init {
-        this.getAttribute(Attribute.MOVEMENT_SPEED).baseValue = 0.16
+        this.getAttribute(Attribute.MOVEMENT_SPEED).baseValue = 0.40
 
         addAIGroup(
             listOf(
-                MeleeAttackGoal(this, 1.6, 20.ticks.toJavaDuration()),
+                MeleeAttackGoal(this, 1.2, 20.ticks.toJavaDuration()),
                 RandomStrollGoal(this, 5),
                 RandomLookAroundGoal(this, 20)
             ),
@@ -40,5 +40,4 @@ class Zombie(type: ElementType?) : AbstractEnemy(EntityType.ZOMBIE, type, "Corru
         )
         this.health = enemyHealth
     }
-
 }

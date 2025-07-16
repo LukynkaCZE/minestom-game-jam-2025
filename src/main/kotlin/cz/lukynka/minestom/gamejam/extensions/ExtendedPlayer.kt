@@ -23,6 +23,16 @@ fun Player.send(message: String) {
     this.sendPacket(SystemChatPacket(message.miniMessage, false))
 }
 
+fun Collection<Player>.send(message: String) {
+    this.sendPacket(SystemChatPacket(message.miniMessage, false))
+}
+
+fun Collection<Player>.playSound(sound: SoundEvent, volume: Float = 1f, pitch: Float = 1f) {
+    this.forEach { player ->
+        player.sendPacket(SoundEffectPacket(sound, Sound.Source.MASTER, player.position, volume, pitch, 0))
+    }
+}
+
 fun Player.sendActionBar(text: String) {
     this.sendPacket(SystemChatPacket(text.miniMessage, true))
 }

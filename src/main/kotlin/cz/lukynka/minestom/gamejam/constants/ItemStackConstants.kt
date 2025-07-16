@@ -4,6 +4,7 @@ package cz.lukynka.minestom.gamejam.constants
 
 import net.minestom.server.component.DataComponentMap
 import net.minestom.server.component.DataComponents
+import net.minestom.server.coordinate.Vec
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 import net.minestom.server.item.component.CustomModelData

@@ -20,6 +20,7 @@ import net.minestom.server.entity.metadata.display.AbstractDisplayMeta
 import net.minestom.server.event.entity.EntityAttackEvent
 import net.minestom.server.event.entity.EntityDamageEvent
 import net.minestom.server.event.entity.EntityDeathEvent
+import net.minestom.server.event.player.PlayerDisconnectEvent
 import net.minestom.server.event.player.PlayerSwapItemEvent
 import net.minestom.server.event.player.PlayerTickEndEvent
 import net.minestom.server.item.Material
@@ -35,8 +36,27 @@ object CombatManager {
     private const val EXPLOSION_RADIUS = 3.5f
 
     val inSlamMode: MutableSet<Player> = mutableSetOf()
+    private val playerInvincibleTicks: MutableMap<Player, Int> = mutableMapOf()
+
+    fun getInvincibleTicks(player: Player): Int {
+        if (playerInvincibleTicks[player] == null) {
+            playerInvincibleTicks[player] = 0
+        }
+
+        return playerInvincibleTicks[player]!!
+    }
+
+    fun setInvincibleTicks(player: Player, ticks: Int) {
+        getInvincibleTicks(player)
+        playerInvincibleTicks[player] = ticks
+    }
 
     fun init() {
+        MinecraftServer.getGlobalEventHandler().addListener(PlayerDisconnectEvent::class.java) { event ->
+            val player = event.player
+            playerInvincibleTicks.remove(player)
+        }
+
         GLOBAL_EVENT_HANDLER.addListener(PlayerSwapItemEvent::class.java) { event ->
             val player = event.player
             event.isCancelled = true
@@ -57,12 +77,19 @@ object CombatManager {
             } else {
                 player.velocity = Vec(0.0, -100.0, 0.0)
                 player.instance.playSound(Sounds.SMASH_JUMP_MID_AIR, player.position, 1f, 1f)
+                setInvincibleTicks(player, 10)
             }
         }
 
         GLOBAL_EVENT_HANDLER.addListener(PlayerTickEndEvent::class.java) { event ->
             val player = event.player
             StaminaManager.sendActionBar(player)
+
+            val invincibilityTicks = getInvincibleTicks(player)
+            if (invincibilityTicks > 0) {
+                setInvincibleTicks(player, invincibilityTicks - 1)
+            }
+
             if (inSlamMode.contains(event.player)) {
                 if (!player.isOnGround) return@addListener
                 player.instance.entities.filter { entity ->
@@ -73,6 +100,7 @@ object CombatManager {
                     (entity as AbstractEnemy).damage(DamageType.MACE_SMASH, 10f)
                 }
                 inSlamMode.remove(player)
+                setInvincibleTicks(player, 5)
 
                 player.instance.playSound(SoundEvent.ITEM_MACE_SMASH_GROUND_HEAVY, player.position, 0.5f, 1f)
                 player.instance.playSound(Sounds.SMASH_JUMP_LAND, player.position, 1f, 1f)
@@ -89,6 +117,13 @@ object CombatManager {
                 entity.playSound(entity.sounds.damageSound)
                 entity.instance.spawnBlood(entity.position, Vector3d(0.2, 1.0, 0.2), 100)
             }
+            if (entity is Player) {
+                if (getInvincibleTicks(entity) > 0) {
+                    event.isCancelled = true
+                } else {
+                    setInvincibleTicks(entity, 5)
+                }
+            }
         }
 
         GLOBAL_EVENT_HANDLER.addListener(EntityDeathEvent::class.java) { event ->
@@ -96,6 +131,9 @@ object CombatManager {
             if (entity is AbstractEnemy) {
                 entity.playSound(entity.sounds.deathSound)
                 entity.elementType.value?.let { explodeElement(it, entity.position.toLocation(entity.instance), entity) }
+            }
+            if (entity is Player) {
+                setInvincibleTicks(entity, 20)
             }
         }
 

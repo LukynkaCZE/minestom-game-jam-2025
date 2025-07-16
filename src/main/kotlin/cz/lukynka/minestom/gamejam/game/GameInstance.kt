@@ -1,28 +1,22 @@
 package cz.lukynka.minestom.gamejam.game
 
 import cz.lukynka.minestom.gamejam.*
-import cz.lukynka.minestom.gamejam.Disposable
 import cz.lukynka.minestom.gamejam.apis.Bossbar
-import cz.lukynka.minestom.gamejam.combat.ElementType
 import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
-import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.GATE
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.NEXT_LEVEL_DOOR
-import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.MOB_SPAWN
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.SPAWN
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NOT_IN_ELEVATOR
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.playerLeftGameInstance
 import cz.lukynka.minestom.gamejam.entity.AbstractEnemy
-import cz.lukynka.minestom.gamejam.entity.Zombie
 import cz.lukynka.minestom.gamejam.extensions.iterBlocks
 import cz.lukynka.minestom.gamejam.extensions.playSound
 import cz.lukynka.minestom.gamejam.extensions.spawnEntity
 import cz.lukynka.minestom.gamejam.extensions.toPos
 import cz.lukynka.minestom.gamejam.game.delay.NormalWaveDelay
+import cz.lukynka.minestom.gamejam.game.delay.TutorialRoomDelay
 import cz.lukynka.minestom.gamejam.game.delay.WaveDelay
-import cz.lukynka.minestom.gamejam.hub
-import cz.lukynka.minestom.gamejam.hubSpawnPoint
 import cz.lukynka.minestom.gamejam.utils.WorldAudience
 import cz.lukynka.minestom.gamejam.utils.loadChunks
 import cz.lukynka.minestom.gamejam.utils.schedule
@@ -67,13 +61,18 @@ class GameInstance : WorldAudience, Disposable {
     private val propEntities = ObjectArrayList<Entity>()
     private val enemies = ObjectArrayList<AbstractEnemy>()
     private val tutorials = ObjectArrayList<WaveDelay>()
-    private val bar = Bossbar(bossBarTitle(), 0f, BossBar.Color.RED, BossBar.Overlay.PROGRESS)
+    val bar = Bossbar(bossBarTitle(), 0f, BossBar.Color.RED, BossBar.Overlay.PROGRESS)
+    var room: Int = 0
 
     private var wave = 0
     private var totalEnemies = 0
+    private var difficulty = 0
 
     fun start(players: Collection<Player>): CompletableFuture<Void> {
         check(state == State.INITIALIZING) { "state must be initializing to start game" }
+        tutorials.add(TutorialRoomDelay(players, "<aqua>Double jump<white> while holding <yellow>WASD <white>to dash in that direction", 5.seconds))
+        tutorials.add(TutorialRoomDelay(players, "<white>Launch yourself up by pressing <aqua><key:'key.swapOffhand'><white> and <yellow>slam down<white> by pressing it again mid-air", 7.seconds))
+        tutorials.add(TutorialRoomDelay(players, "Killing a mob of <yellow>certain type <gray>(indicated by glow color)<white> near <yellow>another type<white> <gray>(for example, <red>Fire<gray> and <pink>Electric<gray> <white>will trigger <green>elemental chain reaction", 8.seconds))
 
         return elevator.readyFuture.thenCompose {
             elevator.start(players)
@@ -83,9 +82,9 @@ class GameInstance : WorldAudience, Disposable {
     }
 
     fun nextWave() {
-        val delay = tutorials.removeFirstOrNull() ?: NormalWaveDelay(2.seconds, world.players)
+        val delay = if (wave == 0 && room == 0) NormalWaveDelay(1.seconds, world.players) else tutorials.removeFirstOrNull() ?: NormalWaveDelay(2.seconds, world.players)
 
-        var future: CompletableFuture<*> = delay.start()
+        var future: CompletableFuture<*> = delay.start(this)
         if (++wave >= 5) {
             wave = 1
             future = future.thenCompose {
@@ -99,21 +98,62 @@ class GameInstance : WorldAudience, Disposable {
                 return@thenRun
             }
 
+            difficulty++
             val spawns = maps.last().getPointsById(MOB_SPAWN)
                 .toMutableList()
-            val nZombies = Random.nextInt(5, 9).coerceAtMost(spawns.size)
-            totalEnemies = nZombies
+            val nEnemies = getAmountForWave(difficulty).coerceAtMost(spawns.size)
+            totalEnemies = nEnemies
 
-            repeat(nZombies) {
+            getEnemiesForWave(difficulty, nEnemies).forEach { enemy ->
                 val i = Random.nextInt(spawns.size)
                 val spawn = spawns.removeAt(i)
-
-                val zombie = Zombie(ElementType.entries.random())
-                zombie.setInstance(world, spawn.toPos())
-                enemies.add(zombie)
+                val entity = enemy.invoke()
+                entity.setInstance(world, spawn.toPos())
+                enemies.add(entity)
             }
+
             updateBossBar()
         }
+        future.exceptionally { ex ->
+            ex.printStackTrace()
+            throw ex
+            null
+        }
+    }
+
+    private fun getAmountForWave(difficulty: Int): Int {
+        val amountRange = EnemySpawns.difficultyToAmount.entries
+            .firstOrNull { difficulty in it.key }
+            ?.value ?: return 1
+        return amountRange.randomOrNull() ?: 1
+    }
+
+
+    fun getEnemiesForWave(difficulty: Int, numberOfEnemies: Int): List<() -> AbstractEnemy> {
+        val possibleSpawns = EnemySpawns.difficultyToEnemies.entries
+            .firstOrNull { difficulty in it.key }
+            ?.value
+            ?: emptyList()
+
+        if (possibleSpawns.isEmpty()) {
+            return emptyList()
+        }
+
+        val totalWeight = possibleSpawns.sumOf { it.weight }
+        if (totalWeight <= 0) return emptyList()
+
+        val enemyList = mutableListOf<() -> AbstractEnemy>()
+        repeat(numberOfEnemies) {
+            var randomWeight = Random.nextInt(totalWeight)
+            for (spawnData in possibleSpawns) {
+                randomWeight -= spawnData.weight
+                if (randomWeight < 0) {
+                    enemyList.add(spawnData.supplier)
+                    break
+                }
+            }
+        }
+        return enemyList
     }
 
     fun onEntityDeath(entity: Entity) {
@@ -204,11 +244,11 @@ class GameInstance : WorldAudience, Disposable {
             origin
         }
 
-        val map = map.toMinestomMap(spawn, world)
-        maps.add(map)
+        val minestomMap = map.toMinestomMap(spawn, world)
+        maps.add(minestomMap)
 
-        return world.loadChunks(map.origin, map.origin.add(map.size)).thenCompose {
-            map.placeSchematicAsync()
+        return world.loadChunks(minestomMap.origin, minestomMap.origin.add(minestomMap.size)).thenCompose {
+            minestomMap.placeSchematicAsync()
         }.thenCompose {
             lastMap?.bounds?.firstOrNull { it.id == NEXT_LEVEL_DOOR }
                 ?.let { doorBound ->
@@ -222,19 +262,20 @@ class GameInstance : WorldAudience, Disposable {
                     future
                 } ?: CompletableFuture.completedFuture(null)
         }.thenApply {
-            map.props.stream()
+            minestomMap.props.stream()
                 .map(MinestomProp::spawnEntity)
                 .forEach(this.propEntities::add)
 
-            map
+            minestomMap
         }
     }
 
-    fun bossBarTitle() = "Wave $wave/4: ${enemies.size} enemies left"
+    fun bossBarTitle() = "<red><bold>Wave $wave/4</bold> <dark_gray>- <gray>${enemies.size} enemies left"
 
     fun updateBossBar() {
         bar.title.value = bossBarTitle()
-        bar.progress.value = 1 - (enemies.size.toFloat() / totalEnemies)
+        bar.color.value = BossBar.Color.RED
+        bar.progress.value = enemies.size.toFloat() / totalEnemies
     }
 
     override fun dispose() {
