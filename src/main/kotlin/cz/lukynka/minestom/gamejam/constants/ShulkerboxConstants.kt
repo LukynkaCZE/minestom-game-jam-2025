@@ -38,4 +38,5 @@ object ShulkerboxBounds {
 
     const val NEXT_LEVEL_DOOR = "next_level_door"
     const val GATE = "gate"
+    const val READY_CHECK = "ready_check"
 }

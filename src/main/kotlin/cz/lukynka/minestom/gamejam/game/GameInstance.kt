@@ -8,6 +8,7 @@ import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.BLAST_DOOR_HEIGHT
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.GATE
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.NEXT_LEVEL_DOOR
+import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.READY_CHECK
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.BLAST_DOOR
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.BLAST_DOOR_OFFSET
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.MOB_SPAWN
@@ -17,7 +18,6 @@ import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NOT_IN_ELEVA
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.playerLeftGameInstance
 import cz.lukynka.minestom.gamejam.entity.AbstractEnemy
 import cz.lukynka.minestom.gamejam.extensions.fill
-import cz.lukynka.minestom.gamejam.extensions.iterBlocks
 import cz.lukynka.minestom.gamejam.extensions.playSound
 import cz.lukynka.minestom.gamejam.extensions.spawnEntity
 import cz.lukynka.minestom.gamejam.extensions.toPos
@@ -30,6 +30,7 @@ import cz.lukynka.minestom.gamejam.utils.WorldAudience
 import cz.lukynka.minestom.gamejam.utils.loadChunks
 import cz.lukynka.minestom.gamejam.utils.schedule
 import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
+import cz.lukynka.minestom.gamejam.utils.waitForPlayersToBeInBox
 import cz.lukynka.minestom.gamejam.world2GameInstanceMap
 import cz.lukynka.shulkerbox.minestom.MinestomMap
 import cz.lukynka.shulkerbox.minestom.MinestomProp
@@ -45,12 +46,11 @@ import net.minestom.server.entity.Entity
 import net.minestom.server.entity.Player
 import net.minestom.server.instance.Instance
 import net.minestom.server.instance.LightingChunk
-import net.minestom.server.instance.batch.AbsoluteBlockBatch
 import net.minestom.server.instance.block.Block
 import net.minestom.server.timer.TaskSchedule
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ForkJoinPool
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
 class GameInstance : WorldAudience, Disposable {
@@ -102,23 +102,44 @@ class GameInstance : WorldAudience, Disposable {
     fun nextWave() {
         if (++wave >= 5) {
             wave = 1
-            spawnMap(ShulkerBoxMaps.maps.random())
-                .thenRun {
-                    startNextWave()
+            if (++room % 3 == 0) {
+                spawnMap(ShulkerBoxMaps.shop).thenCompose { map ->
+                    TutorialRoomDelay(world.players, "This is shop.\n bottom text.", 3.seconds).start(this)
+                        .thenCompose {
+                            TutorialRoomDelay(world.players, "When ur done go to the lime square. all of you.", 1.nanoseconds).start(this)
+                        }.thenCompose {
+                            val bound = map.getBound(READY_CHECK)
+                            val point1 = bound.origin
+                            val point2 = point1.add(bound.size)
+
+                            world.waitForPlayersToBeInBox(point1, point2)
+                        }
+                }.thenCompose {
+                    spawnNextRandomRoom()
                 }
+            } else {
+                spawnNextRandomRoom()
+            }
         } else {
             startNextWave()
         }
     }
 
-    fun startNextWave() {
+    private fun spawnNextRandomRoom(): CompletableFuture<Void> {
+        return spawnMap(ShulkerBoxMaps.maps.random())
+            .thenCompose {
+                startNextWave()
+            }
+    }
+
+    fun startNextWave(): CompletableFuture<Void> {
         val delay = if (wave == 1 && room == 0) {
             NormalWaveDelay(1.seconds, world.players)
         } else {
             tutorials.removeFirstOrNull() ?: NormalWaveDelay(2.seconds, world.players)
         }
 
-        delay.start(this).thenRun {
+        return delay.start(this).thenRun {
             // in case its disposed we don't want to spawn entities anymore
             if (state != State.GAME) {
                 return@thenRun
