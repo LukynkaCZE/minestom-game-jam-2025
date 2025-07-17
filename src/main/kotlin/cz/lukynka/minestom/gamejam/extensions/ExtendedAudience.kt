@@ -10,12 +10,10 @@ import net.minestom.server.sound.SoundEvent
 
 fun Audience.sendMessage(msg: String) = sendMessage(Component.text(msg))
 
-fun WorldAudience.playSound(sound: AbstractEnemy.SoundRange, volume: Float = 0.8f) {
+fun Audience.playSound(sound: AbstractEnemy.SoundRange, volume: Float = 0.8f) {
     this.playSound(sound.sound, sound.pitchRange.random(), volume)
 }
 
-fun WorldAudience.playSound(sound: SoundEvent, volume: Float = 1f, pitch: Float = 1f) {
-    this.world.players.forEach { player ->
-        player.sendPacket(SoundEffectPacket(sound, Sound.Source.MASTER, player.position, volume, pitch, 0))
-    }
+fun Audience.playSound(sound: SoundEvent, volume: Float = 1f, pitch: Float = 1f) {
+    this.playSound(Sound.sound(sound, Sound.Source.MASTER, volume, pitch))
 }
