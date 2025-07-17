@@ -131,6 +131,9 @@ class GameInstance : WorldAudience, Disposable {
                     }
                 }.thenCompose {
                     spawnNextRandomRoom()
+                }.exceptionally { e ->
+                    e.printStackTrace()
+                    throw e
                 }
             } else {
                 spawnNextRandomRoom()
@@ -324,6 +327,9 @@ class GameInstance : WorldAudience, Disposable {
             minestomMap.props.forEach(MinestomProp::spawnEntity)
 
             minestomMap
+        }.exceptionally { e ->
+            e.printStackTrace()
+            throw e
         }
     }
 
