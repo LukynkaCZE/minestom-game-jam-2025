@@ -49,8 +49,8 @@ import net.minestom.server.instance.LightingChunk
 import net.minestom.server.instance.block.Block
 import net.minestom.server.timer.TaskSchedule
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletableFuture.completedFuture
 import kotlin.random.Random
-import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
 class GameInstance : WorldAudience, Disposable {
@@ -78,6 +78,7 @@ class GameInstance : WorldAudience, Disposable {
     private var blastDoorEntity: Entity? = null
 
     private val tutorials = ObjectArrayList<WaveDelay>()
+    private var seenShopTutor = false
     val bar = Bossbar(bossBarTitle(), 0f, BossBar.Color.RED, BossBar.Overlay.PROGRESS)
     private var room: Int = 0
 
@@ -104,16 +105,25 @@ class GameInstance : WorldAudience, Disposable {
             wave = 1
             if (++room % 3 == 0) {
                 spawnMap(ShulkerBoxMaps.shop).thenCompose { map ->
-                    TutorialRoomDelay(world.players, "This is shop.\n bottom text.", 0.seconds).start(this)
-                        .thenCompose {
-                            TutorialRoomDelay(world.players, "When ur done go to the lime square. all of you.\n TODO: friendlier message", 2.seconds).start(this)
-                        }.thenCompose {
-                            val bound = map.getBound(READY_CHECK)
-                            val point1 = bound.origin
-                            val point2 = point1.add(bound.size)
+                    if (!seenShopTutor) {
+                        seenShopTutor = true
+                        TutorialRoomDelay(world.players, "This is shop.\n bottom text.", 0.seconds).start(this)
+                            .thenCompose {
+                                TutorialRoomDelay(world.players, "When ur done go to the lime square. all of you.\n TODO: friendlier message", 2.seconds).start(this)
+                            }
+                    } else {
+                        completedFuture(null)
+                    }.thenCompose {
+                        bar.title.value = "In shop"
+                        bar.progress.value = 1f
+                        bar.color.value = BossBar.Color.YELLOW
 
-                            world.waitForPlayersToBeInBox(point1, point2)
-                        }
+                        val bound = map.getBound(READY_CHECK)
+                        val point1 = bound.origin
+                        val point2 = point1.add(bound.size)
+
+                        world.waitForPlayersToBeInBox(point1, point2)
+                    }
                 }.thenCompose {
                     spawnNextRandomRoom()
                 }
@@ -299,8 +309,8 @@ class GameInstance : WorldAudience, Disposable {
             lastMap?.bounds?.firstOrNull { it.id == NEXT_LEVEL_DOOR }?.fill(Block.BARRIER)?.thenCompose {
                 lastMap.getPointOrNull(BLAST_DOOR)?.let { point ->
                     closeBlastDoor(point.toPos())
-                } ?: CompletableFuture.completedFuture(null)
-            } ?: CompletableFuture.completedFuture(null)
+                } ?: completedFuture(null)
+            } ?: completedFuture(null)
         }.thenRun {
             minestomMap.getPointOrNull(BLAST_DOOR)?.toPos()?.let { point ->
                 spawnBlastDoor(point).thenAccept { blastDoorEntity = it }
@@ -315,7 +325,7 @@ class GameInstance : WorldAudience, Disposable {
     fun bossBarTitle() = "<red><bold>Wave $wave/4</bold> <dark_gray>- <gray>${enemies.size} enemies left"
 
     private fun openBlastDoor(): CompletableFuture<Void> {
-        val entity = blastDoorEntity ?: return CompletableFuture.completedFuture(null)
+        val entity = blastDoorEntity ?: return completedFuture(null)
         blastDoorEntity = null
 
         val pos = entity.position.y + BLAST_DOOR_HEIGHT
