@@ -104,9 +104,9 @@ class GameInstance : WorldAudience, Disposable {
             wave = 1
             if (++room % 3 == 0) {
                 spawnMap(ShulkerBoxMaps.shop).thenCompose { map ->
-                    TutorialRoomDelay(world.players, "This is shop.\n bottom text.", 3.seconds).start(this)
+                    TutorialRoomDelay(world.players, "This is shop.\n bottom text.", 0.seconds).start(this)
                         .thenCompose {
-                            TutorialRoomDelay(world.players, "When ur done go to the lime square. all of you.", 1.nanoseconds).start(this)
+                            TutorialRoomDelay(world.players, "When ur done go to the lime square. all of you.\n TODO: friendlier message", 2.seconds).start(this)
                         }.thenCompose {
                             val bound = map.getBound(READY_CHECK)
                             val point1 = bound.origin
@@ -270,9 +270,6 @@ class GameInstance : WorldAudience, Disposable {
 
     fun spawnMap(map: MinestomShulkerboxMap): CompletableFuture<MinestomMap> {
         val lastMap = maps.lastOrNull()
-        val mapBeforeLast: MinestomMap? = if (maps.size > 1) {
-            maps[maps.size - 2]
-        } else null
 
         val spawn: Point = if (lastMap != null) {
             val origin = lastMap.origin.add(lastMap.size.x, 0.0, 0.0)
@@ -297,12 +294,12 @@ class GameInstance : WorldAudience, Disposable {
                     doorBound.fill(Block.AIR).thenCompose { openBlastDoor() }
                 } ?: openBlastDoor()
         }.thenCompose {
-            mapBeforeLast?.getPointOrNull(BLAST_DOOR)?.let { point ->
-                closeBlastDoor(point.toPos())
-            }?.thenCompose {
-                mapBeforeLast.bounds.firstOrNull { it.id == NEXT_LEVEL_DOOR }
-                    ?.fill(Block.BARRIER)
-                    ?: CompletableFuture.completedFuture(null)
+            world.waitForPlayersToBeInBox(minestomMap.origin.add(2.0, .0, .0), minestomMap.origin.add(minestomMap.size))
+        }.thenCompose {
+            lastMap?.bounds?.firstOrNull { it.id == NEXT_LEVEL_DOOR }?.fill(Block.BARRIER)?.thenCompose {
+                lastMap.getPointOrNull(BLAST_DOOR)?.let { point ->
+                    closeBlastDoor(point.toPos())
+                } ?: CompletableFuture.completedFuture(null)
             } ?: CompletableFuture.completedFuture(null)
         }.thenRun {
             minestomMap.getPointOrNull(BLAST_DOOR)?.toPos()?.let { point ->
