@@ -8,6 +8,9 @@ import net.minestom.server.coordinate.Point
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.coordinate.Vec
 import net.minestom.server.entity.Entity
+import net.minestom.server.instance.batch.AbsoluteBlockBatch
+import net.minestom.server.instance.block.Block
+import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 
 fun MinestomBoundingBox.iterBlocks(consumer: Consumer<Point>) {
@@ -22,6 +25,16 @@ fun MinestomBoundingBox.iterBlocks(consumer: Consumer<Point>) {
     }
 }
 
+fun MinestomBoundingBox.fill(block: Block): CompletableFuture<Void> {
+    val batch = AbsoluteBlockBatch()
+    iterBlocks { point ->
+        batch.setBlock(point, block)
+    }
+    val future = CompletableFuture<Void>()
+    batch.apply(world) { future.complete(null) }
+    return future
+}
+
 fun MinestomBoundingBox.toBound(): Bound {
     return Bound(
         origin.toLocation(world),
@@ -29,7 +42,7 @@ fun MinestomBoundingBox.toBound(): Bound {
     )
 }
 
-fun MinestomProp.spawnEntity(): Entity {
+fun MinestomProp.spawnEntity(): CompletableFuture<Entity> {
     return spawnItemDisplay(
         world,
         Pos.fromPoint(location)

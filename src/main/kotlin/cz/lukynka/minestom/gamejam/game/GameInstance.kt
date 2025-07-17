@@ -16,6 +16,7 @@ import cz.lukynka.minestom.gamejam.constants.Sounds
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NOT_IN_ELEVATOR
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.playerLeftGameInstance
 import cz.lukynka.minestom.gamejam.entity.AbstractEnemy
+import cz.lukynka.minestom.gamejam.extensions.fill
 import cz.lukynka.minestom.gamejam.extensions.iterBlocks
 import cz.lukynka.minestom.gamejam.extensions.playSound
 import cz.lukynka.minestom.gamejam.extensions.spawnEntity
@@ -48,6 +49,7 @@ import net.minestom.server.instance.batch.AbsoluteBlockBatch
 import net.minestom.server.instance.block.Block
 import net.minestom.server.timer.TaskSchedule
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ForkJoinPool
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
@@ -72,7 +74,6 @@ class GameInstance : WorldAudience, Disposable {
 
     private val maps = mutableListOf<MinestomMap>()
 
-    private val propEntities = ObjectArrayList<Entity>()
     private val enemies = ObjectArrayList<AbstractEnemy>()
     private var blastDoorEntity: Entity? = null
 
@@ -214,15 +215,9 @@ class GameInstance : WorldAudience, Disposable {
                                 world.players.forEach(bar::addViewer)
 
                                 // break the gate
-                                val bound = map.getBound(GATE)
-
-                                val batch = AbsoluteBlockBatch()
-
-                                bound.iterBlocks { point ->
-                                    batch.setBlock(point, Block.AIR)
-                                }
-
-                                batch.apply(world, ::nextWave)
+                                map.getBound(GATE)
+                                    .fill(Block.AIR)
+                                    .thenRun { nextWave() }
                             }
                         }
                 }
@@ -254,6 +249,9 @@ class GameInstance : WorldAudience, Disposable {
 
     fun spawnMap(map: MinestomShulkerboxMap): CompletableFuture<MinestomMap> {
         val lastMap = maps.lastOrNull()
+        val mapBeforeLast: MinestomMap? = if (maps.size > 1) {
+            maps[maps.size - 2]
+        } else null
 
         val spawn: Point = if (lastMap != null) {
             val origin = lastMap.origin.add(lastMap.size.x, 0.0, 0.0)
@@ -275,23 +273,22 @@ class GameInstance : WorldAudience, Disposable {
         }.thenCompose {
             lastMap?.bounds?.firstOrNull { it.id == NEXT_LEVEL_DOOR }
                 ?.let { doorBound ->
-                    val batch = AbsoluteBlockBatch()
-
-                    doorBound.iterBlocks { point ->
-                        batch.setBlock(point, Block.AIR)
-                    }
-                    val future = CompletableFuture<Void>()
-                    batch.apply(world) { future.complete(null) }
-                    future.thenCompose { openBlastDoor() }
+                    doorBound.fill(Block.AIR).thenCompose { openBlastDoor() }
                 } ?: openBlastDoor()
+        }.thenCompose {
+            mapBeforeLast?.getPointOrNull(BLAST_DOOR)?.let { point ->
+                closeBlastDoor(point.toPos())
+            }?.thenCompose {
+                mapBeforeLast.bounds.firstOrNull { it.id == NEXT_LEVEL_DOOR }
+                    ?.fill(Block.BARRIER)
+                    ?: CompletableFuture.completedFuture(null)
+            } ?: CompletableFuture.completedFuture(null)
         }.thenRun {
             minestomMap.getPointOrNull(BLAST_DOOR)?.toPos()?.let { point ->
-                spawnBlastDoor(point)
+                spawnBlastDoor(point).thenAccept { blastDoorEntity = it }
             }
         }.thenApply {
-            minestomMap.props.stream()
-                .map(MinestomProp::spawnEntity)
-                .forEach(this.propEntities::add)
+            minestomMap.props.forEach(MinestomProp::spawnEntity)
 
             minestomMap
         }
@@ -321,10 +318,33 @@ class GameInstance : WorldAudience, Disposable {
     }
 
     /**
+     * Spawns the entity above the [endPoint] and moves it down until [endPoint]
+     * just leaves the entity there forever
+     */
+    private fun closeBlastDoor(endPoint: Point): CompletableFuture<Void> {
+        return spawnBlastDoor(endPoint.add(0.0, BLAST_DOOR_HEIGHT, 0.0))
+            .thenCompose { entity ->
+                val endPoint = entity.position.y - BLAST_DOOR_HEIGHT
+                val future = CompletableFuture<Void>()
+
+                MinecraftServer.getSchedulerManager().submitTask {
+                    if (entity.position.y <= endPoint) {
+                        future.complete(null)
+                        return@submitTask TaskSchedule.stop()
+                    }
+
+                    entity.teleport(entity.position.sub(blastDoorSpeedPerTick))
+                    TaskSchedule.tick(1)
+                }
+                future
+            }
+    }
+
+    /**
      * Fixes the spawn and spawns blast door there
      */
-    private fun spawnBlastDoor(spawn: Point) {
-        blastDoorEntity = spawnItemDisplay(
+    private fun spawnBlastDoor(spawn: Point): CompletableFuture<Entity> {
+        return spawnItemDisplay(
             world,
             Pos(spawn.add(BLAST_DOOR_OFFSET), 90f, 0f)
         ) {
@@ -346,8 +366,6 @@ class GameInstance : WorldAudience, Disposable {
         world.players.forEach {
             it.setInstance(hub, hubSpawnPoint)
         }
-        propEntities.forEach(Entity::remove)
-        propEntities.clear()
 
         enemies.forEach(Entity::remove)
         enemies.clear()

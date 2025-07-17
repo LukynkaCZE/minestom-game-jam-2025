@@ -160,7 +160,7 @@ class Elevator(
             posRotInterpolationDuration = 1
             transformationInterpolationStartDelta = -1
         }
-        elevatorEntities.add(entity)
+        elevatorEntities.add(entity.get())
     }
 
     private fun bossBarTitle() = "Players ready: ${playersReady.size}/${world.players.size}"
