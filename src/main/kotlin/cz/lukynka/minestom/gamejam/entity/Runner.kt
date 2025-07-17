@@ -34,8 +34,7 @@ class Runner(type: ElementType?) : AbstractEnemy(EntityType.PIGLIN, type, "Runne
                 RandomLookAroundGoal(this, 20)
             ),
             listOf(
-                LastEntityDamagerTarget(this, 32f),
-                ClosestEntityTarget(this, 32.0) { it is Player && !it.isInvulnerable }
+                ClosestEntityTarget(this, 32.0) { it is Player && !it.isInvulnerable && !it.isDead }
             )
         )
         this.health = enemyHealth
