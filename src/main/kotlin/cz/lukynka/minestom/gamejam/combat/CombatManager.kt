@@ -1,6 +1,6 @@
 package cz.lukynka.minestom.gamejam.combat
 
-import cz.lukynka.minestom.gamejam.Sounds
+import cz.lukynka.minestom.gamejam.constants.Sounds
 import cz.lukynka.minestom.gamejam.entity.AbstractEnemy
 import cz.lukynka.minestom.gamejam.extensions.*
 import cz.lukynka.minestom.gamejam.minimessage.miniMessage

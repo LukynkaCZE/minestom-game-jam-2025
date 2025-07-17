@@ -7,6 +7,7 @@ import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.GATE
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.NEXT_LEVEL_DOOR
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.MOB_SPAWN
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.SPAWN
+import cz.lukynka.minestom.gamejam.constants.Sounds
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NOT_IN_ELEVATOR
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.playerLeftGameInstance
 import cz.lukynka.minestom.gamejam.entity.AbstractEnemy

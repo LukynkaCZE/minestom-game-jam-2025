@@ -1,6 +1,6 @@
 package cz.lukynka.minestom.gamejam.game.delay
 
-import cz.lukynka.minestom.gamejam.Sounds
+import cz.lukynka.minestom.gamejam.constants.Sounds
 import cz.lukynka.minestom.gamejam.extensions.playSound
 import cz.lukynka.minestom.gamejam.extensions.send
 import cz.lukynka.minestom.gamejam.game.GameInstance
