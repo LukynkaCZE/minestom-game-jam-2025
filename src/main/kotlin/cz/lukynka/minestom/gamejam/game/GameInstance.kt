@@ -1,6 +1,6 @@
 package cz.lukynka.minestom.gamejam.game
 
-import cz.lukynka.minestom.gamejam.*
+import cz.lukynka.minestom.gamejam.Disposable
 import cz.lukynka.minestom.gamejam.apis.Bossbar
 import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.GATE
@@ -18,9 +18,12 @@ import cz.lukynka.minestom.gamejam.extensions.toPos
 import cz.lukynka.minestom.gamejam.game.delay.NormalWaveDelay
 import cz.lukynka.minestom.gamejam.game.delay.TutorialRoomDelay
 import cz.lukynka.minestom.gamejam.game.delay.WaveDelay
+import cz.lukynka.minestom.gamejam.hub
+import cz.lukynka.minestom.gamejam.hubSpawnPoint
 import cz.lukynka.minestom.gamejam.utils.WorldAudience
 import cz.lukynka.minestom.gamejam.utils.loadChunks
 import cz.lukynka.minestom.gamejam.utils.schedule
+import cz.lukynka.minestom.gamejam.world2GameInstanceMap
 import cz.lukynka.shulkerbox.minestom.MinestomMap
 import cz.lukynka.shulkerbox.minestom.MinestomProp
 import cz.lukynka.shulkerbox.minestom.MinestomShulkerboxMap
@@ -63,7 +66,7 @@ class GameInstance : WorldAudience, Disposable {
     private val enemies = ObjectArrayList<AbstractEnemy>()
     private val tutorials = ObjectArrayList<WaveDelay>()
     val bar = Bossbar(bossBarTitle(), 0f, BossBar.Color.RED, BossBar.Overlay.PROGRESS)
-    var room: Int = 0
+    private var room: Int = 0
 
     private var wave = 0
     private var totalEnemies = 0
@@ -83,7 +86,11 @@ class GameInstance : WorldAudience, Disposable {
     }
 
     fun nextWave() {
-        val delay = if (wave == 0 && room == 0) NormalWaveDelay(1.seconds, world.players) else tutorials.removeFirstOrNull() ?: NormalWaveDelay(2.seconds, world.players)
+        val delay = if (wave == 0 && room == 0) {
+            NormalWaveDelay(1.seconds, world.players)
+        } else {
+            tutorials.removeFirstOrNull() ?: NormalWaveDelay(2.seconds, world.players)
+        }
 
         var future: CompletableFuture<*> = delay.start(this)
         if (++wave >= 5) {
@@ -118,7 +125,6 @@ class GameInstance : WorldAudience, Disposable {
         future.exceptionally { ex ->
             ex.printStackTrace()
             throw ex
-            null
         }
     }
 
