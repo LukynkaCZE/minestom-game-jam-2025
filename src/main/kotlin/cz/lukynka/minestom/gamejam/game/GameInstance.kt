@@ -15,6 +15,7 @@ import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.MOB_SPAWN
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.SPAWN
 import cz.lukynka.minestom.gamejam.constants.Sounds
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.NOT_IN_ELEVATOR
+import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.ROOM_CLEARED
 import cz.lukynka.minestom.gamejam.constants.TextComponentConstants.playerLeftGameInstance
 import cz.lukynka.minestom.gamejam.entity.AbstractEnemy
 import cz.lukynka.minestom.gamejam.extensions.fill
@@ -47,6 +48,7 @@ import net.minestom.server.entity.Player
 import net.minestom.server.instance.Instance
 import net.minestom.server.instance.LightingChunk
 import net.minestom.server.instance.block.Block
+import net.minestom.server.sound.SoundEvent
 import net.minestom.server.timer.TaskSchedule
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.completedFuture
@@ -103,6 +105,9 @@ class GameInstance : WorldAudience, Disposable {
     fun nextWave() {
         if (++wave >= 5) {
             wave = 1
+            sendMessage(ROOM_CLEARED)
+            playSound(SoundEvent.BLOCK_AMETHYST_BLOCK_PLACE)
+
             if (++room % 3 == 0) {
                 spawnMap(ShulkerBoxMaps.shop).thenCompose { map ->
                     if (!seenShopTutor) {
