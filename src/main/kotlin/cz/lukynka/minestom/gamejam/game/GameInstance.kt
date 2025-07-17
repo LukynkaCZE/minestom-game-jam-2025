@@ -2,9 +2,14 @@ package cz.lukynka.minestom.gamejam.game
 
 import cz.lukynka.minestom.gamejam.Disposable
 import cz.lukynka.minestom.gamejam.apis.Bossbar
+import cz.lukynka.minestom.gamejam.constants.ItemStackConstants
+import cz.lukynka.minestom.gamejam.constants.ItemStackConstants.BLAST_DOOR_SCALE
 import cz.lukynka.minestom.gamejam.constants.ShulkerBoxMaps
+import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.BLAST_DOOR_HEIGHT
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.GATE
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxBounds.NEXT_LEVEL_DOOR
+import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.BLAST_DOOR
+import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.BLAST_DOOR_OFFSET
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.MOB_SPAWN
 import cz.lukynka.minestom.gamejam.constants.ShulkerboxPointConstants.SPAWN
 import cz.lukynka.minestom.gamejam.constants.Sounds
@@ -23,6 +28,7 @@ import cz.lukynka.minestom.gamejam.hubSpawnPoint
 import cz.lukynka.minestom.gamejam.utils.WorldAudience
 import cz.lukynka.minestom.gamejam.utils.loadChunks
 import cz.lukynka.minestom.gamejam.utils.schedule
+import cz.lukynka.minestom.gamejam.utils.spawnItemDisplay
 import cz.lukynka.minestom.gamejam.world2GameInstanceMap
 import cz.lukynka.shulkerbox.minestom.MinestomMap
 import cz.lukynka.shulkerbox.minestom.MinestomProp
@@ -32,6 +38,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import net.kyori.adventure.bossbar.BossBar
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Point
+import net.minestom.server.coordinate.Pos
 import net.minestom.server.coordinate.Vec
 import net.minestom.server.entity.Entity
 import net.minestom.server.entity.Player
@@ -47,6 +54,7 @@ import kotlin.time.Duration.Companion.seconds
 class GameInstance : WorldAudience, Disposable {
     companion object {
         val origin = Vec(0.0, 42.0, 0.0)
+        val blastDoorSpeedPerTick = Vec(0.0, 2.0 / 20, 0.0)
     }
 
     override val world: Instance = MinecraftServer.getInstanceManager().createInstanceContainer()
@@ -61,9 +69,13 @@ class GameInstance : WorldAudience, Disposable {
 
     val elevator = Elevator(world, origin)
     var state = State.INITIALIZING
+
     private val maps = mutableListOf<MinestomMap>()
+
     private val propEntities = ObjectArrayList<Entity>()
     private val enemies = ObjectArrayList<AbstractEnemy>()
+    private var blastDoorEntity: Entity? = null
+
     private val tutorials = ObjectArrayList<WaveDelay>()
     val bar = Bossbar(bossBarTitle(), 0f, BossBar.Color.RED, BossBar.Overlay.PROGRESS)
     private var room: Int = 0
@@ -74,6 +86,7 @@ class GameInstance : WorldAudience, Disposable {
 
     fun start(players: Collection<Player>): CompletableFuture<Void> {
         check(state == State.INITIALIZING) { "state must be initializing to start game" }
+
         tutorials.add(TutorialRoomDelay(players, "<aqua>Double jump<white> while holding <yellow>WASD <white>to dash in that direction", 5.seconds))
         tutorials.add(TutorialRoomDelay(players, "<white>Launch yourself up by pressing <aqua><key:'key.swapOffhand'><white> and <yellow>slam down<white> by pressing it again mid-air", 7.seconds))
         tutorials.add(TutorialRoomDelay(players, "Killing a mob of <yellow>certain type <gray>(indicated by glow color)<white> near <yellow>another type<white> <gray>(for example, <red>Fire<gray> and <pink>Electric<gray> <white>will trigger <green>elemental chain reaction", 8.seconds))
@@ -86,21 +99,25 @@ class GameInstance : WorldAudience, Disposable {
     }
 
     fun nextWave() {
-        val delay = if (wave == 0 && room == 0) {
+        if (++wave >= 5) {
+            wave = 1
+            spawnMap(ShulkerBoxMaps.maps.random())
+                .thenRun {
+                    startNextWave()
+                }
+        } else {
+            startNextWave()
+        }
+    }
+
+    fun startNextWave() {
+        val delay = if (wave == 1 && room == 0) {
             NormalWaveDelay(1.seconds, world.players)
         } else {
             tutorials.removeFirstOrNull() ?: NormalWaveDelay(2.seconds, world.players)
         }
 
-        var future: CompletableFuture<*> = delay.start(this)
-        if (++wave >= 5) {
-            wave = 1
-            future = future.thenCompose {
-                spawnMap(ShulkerBoxMaps.maps.random())
-            }
-        }
-
-        future.thenRun {
+        delay.start(this).thenRun {
             // in case its disposed we don't want to spawn entities anymore
             if (state != State.GAME) {
                 return@thenRun
@@ -121,8 +138,7 @@ class GameInstance : WorldAudience, Disposable {
             }
 
             updateBossBar()
-        }
-        future.exceptionally { ex ->
+        }.exceptionally { ex ->
             ex.printStackTrace()
             throw ex
         }
@@ -266,8 +282,12 @@ class GameInstance : WorldAudience, Disposable {
                     }
                     val future = CompletableFuture<Void>()
                     batch.apply(world) { future.complete(null) }
-                    future
-                } ?: CompletableFuture.completedFuture(null)
+                    future.thenCompose { openBlastDoor() }
+                } ?: openBlastDoor()
+        }.thenRun {
+            minestomMap.getPointOrNull(BLAST_DOOR)?.toPos()?.let { point ->
+                spawnBlastDoor(point)
+            }
         }.thenApply {
             minestomMap.props.stream()
                 .map(MinestomProp::spawnEntity)
@@ -278,6 +298,40 @@ class GameInstance : WorldAudience, Disposable {
     }
 
     fun bossBarTitle() = "<red><bold>Wave $wave/4</bold> <dark_gray>- <gray>${enemies.size} enemies left"
+
+    private fun openBlastDoor(): CompletableFuture<Void> {
+        val entity = blastDoorEntity ?: return CompletableFuture.completedFuture(null)
+        blastDoorEntity = null
+
+        val pos = entity.position.y + BLAST_DOOR_HEIGHT
+        val future = CompletableFuture<Void>()
+
+        MinecraftServer.getSchedulerManager().submitTask {
+            if (entity.position.y >= pos) {
+                entity.remove()
+                future.complete(null)
+                return@submitTask TaskSchedule.stop()
+            }
+
+            entity.teleport(entity.position.add(blastDoorSpeedPerTick))
+            TaskSchedule.tick(1)
+        }
+
+        return future
+    }
+
+    /**
+     * Fixes the spawn and spawns blast door there
+     */
+    private fun spawnBlastDoor(spawn: Point) {
+        blastDoorEntity = spawnItemDisplay(
+            world,
+            Pos(spawn.add(BLAST_DOOR_OFFSET), 90f, 0f)
+        ) {
+            itemStack = ItemStackConstants.BLAST_DOOR
+            scale = BLAST_DOOR_SCALE
+        }
+    }
 
     fun updateBossBar() {
         bar.title.value = bossBarTitle()

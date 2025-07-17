@@ -17,6 +17,15 @@ object ItemStackConstants {
             .build()
     )
 
+    val BLAST_DOOR = ItemStack.of(
+        Material.STICK,
+        DataComponentMap.builder()
+            .set(DataComponents.CUSTOM_MODEL_DATA, CustomModelData(listOf(10f), listOf(), listOf(), listOf()))
+            .build()
+    )
+
+    val BLAST_DOOR_SCALE = Vec(5 / 1.55, 3.0, .0)
+
     val ELEVATOR_SCALE = Vec(32.0)
     const val ELEVATOR_HEIGHT = 14.0
     const val ELEVATOR_WIDTH = 17.0
