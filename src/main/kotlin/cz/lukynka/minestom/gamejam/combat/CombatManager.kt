@@ -47,7 +47,6 @@ object CombatManager {
     }
 
     fun setInvincibleTicks(player: Player, ticks: Int) {
-        getInvincibleTicks(player)
         playerInvincibleTicks[player] = ticks
     }
 
@@ -140,6 +139,10 @@ object CombatManager {
         GLOBAL_EVENT_HANDLER.addListener(EntityAttackEvent::class.java) { event ->
             val victim = event.target
             val attacker = event.entity
+
+            if (attacker is LivingEntity && attacker.isDead) {
+                return@addListener
+            }
 
             var damage = 2f
             if (attacker is AbstractEnemy) {
