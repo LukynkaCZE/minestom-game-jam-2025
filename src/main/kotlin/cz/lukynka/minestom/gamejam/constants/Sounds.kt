@@ -1,4 +1,4 @@
-package cz.lukynka.minestom.gamejam
+package cz.lukynka.minestom.gamejam.constants
 
 import net.minestom.server.sound.SoundEvent
 

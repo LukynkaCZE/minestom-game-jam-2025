@@ -1,5 +1,6 @@
 package cz.lukynka.minestom.gamejam.constants
 
+import cz.lukynka.minestom.gamejam.constants.StyleConstants.GOLD_ISH
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.GREY_69
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.RED_69
 import cz.lukynka.minestom.gamejam.constants.StyleConstants.RED_E
@@ -8,13 +9,13 @@ import cz.lukynka.minestom.gamejam.utils.clickableCommand
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.Component.textOfChildren
-import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.format.TextDecoration.BOLD
 import net.kyori.adventure.text.format.TextDecoration.ITALIC
 import net.minestom.server.entity.Player
 
 object TextComponentConstants {
     val NOT_IN_ELEVATOR = text("You are not in elevator!", RED_69, BOLD)
+    val ROOM_CLEARED = text("Room is clear! Proceed to the next one", GOLD_ISH, BOLD, ITALIC)
 
     val IS_READY = text(" is ready")
     val IS_NOT_READY = text(" is not ready")

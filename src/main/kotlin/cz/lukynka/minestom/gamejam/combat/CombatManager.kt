@@ -1,6 +1,6 @@
 package cz.lukynka.minestom.gamejam.combat
 
-import cz.lukynka.minestom.gamejam.Sounds
+import cz.lukynka.minestom.gamejam.constants.Sounds
 import cz.lukynka.minestom.gamejam.entity.AbstractEnemy
 import cz.lukynka.minestom.gamejam.extensions.*
 import cz.lukynka.minestom.gamejam.minimessage.miniMessage
@@ -47,7 +47,6 @@ object CombatManager {
     }
 
     fun setInvincibleTicks(player: Player, ticks: Int) {
-        getInvincibleTicks(player)
         playerInvincibleTicks[player] = ticks
     }
 
@@ -140,6 +139,10 @@ object CombatManager {
         GLOBAL_EVENT_HANDLER.addListener(EntityAttackEvent::class.java) { event ->
             val victim = event.target
             val attacker = event.entity
+
+            if (attacker is LivingEntity && attacker.isDead) {
+                return@addListener
+            }
 
             var damage = 2f
             if (attacker is AbstractEnemy) {

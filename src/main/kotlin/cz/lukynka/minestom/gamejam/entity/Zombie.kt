@@ -34,8 +34,7 @@ class Zombie(type: ElementType?) : AbstractEnemy(EntityType.ZOMBIE, type, "Corru
                 RandomLookAroundGoal(this, 20)
             ),
             listOf(
-                LastEntityDamagerTarget(this, 32f),
-                ClosestEntityTarget(this, 32.0) { it is Player && !it.isInvulnerable }
+                ClosestEntityTarget(this, 32.0) { it is Player && !it.isInvulnerable && !it.isDead }
             )
         )
         this.health = enemyHealth

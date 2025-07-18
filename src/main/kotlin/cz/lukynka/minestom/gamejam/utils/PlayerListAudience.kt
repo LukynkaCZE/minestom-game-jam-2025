@@ -6,6 +6,7 @@ import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.audience.MessageType
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.identity.Identity
+import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
 import net.minestom.server.entity.Player
 
@@ -27,6 +28,24 @@ interface PlayerListAudience : Audience {
     override fun hideBossBar(bar: BossBar) {
         players.forEach {
             it.hideBossBar(bar)
+        }
+    }
+
+    override fun playSound(sound: Sound) {
+        players.forEach {
+            it.playSound(sound)
+        }
+    }
+
+    override fun playSound(sound: Sound, emitter: Sound.Emitter) {
+        players.forEach {
+            it.playSound(sound, emitter)
+        }
+    }
+
+    override fun playSound(sound: Sound, x: Double, y: Double, z: Double) {
+        players.forEach {
+            it.playSound(sound, x, y, z)
         }
     }
 }

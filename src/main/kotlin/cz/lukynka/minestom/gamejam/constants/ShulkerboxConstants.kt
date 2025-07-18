@@ -30,9 +30,13 @@ object ShulkerboxPointConstants {
     const val MOB_SPAWN = "mob_spawn"
     const val NEXT_LEVEL_PICKER = "next_level_picker"
 
+    val BLAST_DOOR_OFFSET = Vec(-.5, 1.5, 0.1)
 }
 
 object ShulkerboxBounds {
+    const val BLAST_DOOR_HEIGHT = 6.0
+
     const val NEXT_LEVEL_DOOR = "next_level_door"
     const val GATE = "gate"
+    const val READY_CHECK = "ready_check"
 }
